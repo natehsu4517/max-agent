@@ -2,7 +2,14 @@
 
 export type ReplyAction = 'reply' | 'divert_sensitive' | 'divert_borderline' | 'stay_out'
 export type LinkIntent = 'book' | 'reschedule' | 'cancel' | 'request'
-export type SensitivityCategory = 'problem' | 'money' | 'legal' | 'complaint' | 'pii' | 'commitment'
+export type SensitivityCategory =
+  | 'problem'
+  | 'money'
+  | 'legal'
+  | 'complaint'
+  | 'pii'
+  | 'commitment'
+  | 'advice'
 
 /** Raw decision from the model layer, before Layer-2 reconciliation. */
 export interface ReplyDecision {

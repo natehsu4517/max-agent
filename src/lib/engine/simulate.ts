@@ -36,7 +36,7 @@ const SENSITIVE_RULES: Array<{
   {
     category: 'commitment',
     pattern:
-      /\bguarantee|\bcan you promise\b|\bhow long until\b|\bwhen will (?:it|this|we|you)\b|\bwill (?:it|this|we|you)\b[^.?!]{0,40}\b(?:be )?(?:done|ready|finished|live|ship|launch|deliver)\b|\bshould (?:i|we)\b/i,
+      /\bguarantee|\bcan you promise\b|\bhow long until\b|\bwhen will (?:it|this|we|you)\b|\bwill (?:it|this|we|you)\b[^.?!]{0,40}\b(?:be )?(?:done|ready|finished|live|ship|launch|deliver)\b/i,
     reasoning: 'the client is asking for a commitment on timing or outcome that the assistant cannot make',
   },
   {
@@ -53,19 +53,43 @@ const SENSITIVE_RULES: Array<{
   },
   {
     category: 'problem',
+    // "down" needs a verb in front of it. A bare \bdown\b read "sounds good,
+    // I'm down for Thursday" as an outage report and answered a cheerful
+    // client with "thanks for flagging that, I have pulled your lead in".
     pattern:
-      /\b(?:down|broken|not work|isn'?t work|won'?t (?:let|load|submit|open|save|go)|can'?t (?:submit|log ?in|access|upload|see|find)|error|erroring|throwing|failing|failed|fails|bug|crash|crashing|timing out|timed out|timeout|stuck|blocked|issue with|problem with|something (?:is )?(?:wrong|off|broken)|went wrong|nothing (?:is )?(?:going|coming) through|stopped working|no longer work)\b|\b(?:404|500|502|503)\b/i,
+      /\b(?:is|are|was|were|went|goes|going|still)\s+down\b|\bdowntime\b|\b(?:broken|not work|isn'?t work|won'?t (?:let|load|submit|open|save|go)|can'?t (?:submit|log ?in|access|upload|see|find)|error|erroring|throwing|failing|failed|fails|bug|crash|crashing|timing out|timed out|timeout|stuck|blocked|issue with|problem with|something (?:is )?(?:wrong|off|broken)|went wrong|nothing (?:is )?(?:going|coming) through|stopped working|no longer work)\b|\b(?:404|500|502|503)\b/i,
     reasoning: 'the client reported a problem or blocker, which always goes to a person',
+  },
+  {
+    // Checked last, so a concrete category (a problem, an invoice) wins when
+    // the client wraps it in "should we".
+    category: 'advice',
+    pattern:
+      /\bshould (?:i|we)\b|\bwhat would you do\b|\bwhat do you (?:think|recommend|suggest)\b|\bwhich (?:one|option|way|route)\b[^.?!]{0,20}\b(?:should|better|best)\b|\bany (?:advice|recommendation|thoughts)\b|\bwould you (?:recommend|suggest)\b/i,
+    reasoning: 'the client is asking for a recommendation, which is a judgment call a person owns',
   },
 ]
 
 // A clean transactional ask. The verb has to be about a call or the form.
+const DAY = 'tomorrow|today|monday|tuesday|wednesday|thursday|friday|next week|this week'
 const TRANSACTIONAL: Array<{ intent: LinkIntent; pattern: RegExp }> = [
   { intent: 'reschedule', pattern: /\b(?:reschedule|move|push|change)\b[^.?!]{0,40}\b(?:call|meeting|appointment|time)\b|\breschedule\b/i },
-  { intent: 'cancel', pattern: /\bcancel\b[^.?!]{0,40}\b(?:call|meeting|appointment|tomorrow|today)\b|\bcancel (?:my|the|our) (?:call|meeting|appointment)\b/i },
-  { intent: 'book', pattern: /\b(?:book|schedule|set up|get on)\b[^.?!]{0,40}\b(?:call|meeting|time|calendar)\b|\bcalendar link\b|\bwhen (?:can|could) (?:we|i) (?:talk|meet|chat)\b/i },
+  { intent: 'cancel', pattern: new RegExp(`\\bcancel\\b[^.?!]{0,40}\\b(?:call|meeting|appointment|${DAY})\\b|\\bcancel (?:my|the|our) (?:call|meeting|appointment)\\b`, 'i') },
+  { intent: 'book', pattern: /\b(?:book|schedule|set up|get on)\b[^.?!]{0,40}\b(?:call|meeting|time|calendar)\b|\b(?:hop|jump|get) on a (?:call|zoom|quick call)\b|\bcalendar link\b|\bwhen (?:can|could) (?:we|i) (?:talk|meet|chat)\b/i },
   { intent: 'request', pattern: /\b(?:request|intake|project|change)\s+(?:request\s+)?form\b|\bhow do i (?:submit|file|put in) (?:a )?(?:request|ticket)\b|\brequest form link\b/i },
 ]
+
+/**
+ * The client is telling us NOT to do the thing.
+ *
+ * A word-match on "cancel" that ignores the "do not" in front of it is how an
+ * assistant confirms the opposite of what a client asked for. "Please do NOT
+ * cancel our call on Thursday" auto-sent a cancellation confirmation, which is
+ * the single worst thing in this demo's whole failure space: not a bad draft, a
+ * wrong action taken autonomously.
+ */
+const NEGATED_ACTION =
+  /\b(?:do not|don't|dont|does not|doesn't|did not|didn't|no need to|not going to|rather not|no longer want|instead of)\s+(?:\w+\s+){0,2}(?:cancel|reschedule|re-?book|book|schedule|move|push|change)\b/i
 
 // The client says they will handle the next step themselves. This is what makes
 // a transactional message "mixed" and therefore unsafe to auto-answer, because
@@ -93,11 +117,25 @@ export function normalizePunctuation(text: string): string {
 }
 
 // Bare acknowledgements that need nothing from anyone.
-const GRATITUDE = /^(?:thanks|thank you|ty|thx|got it|sounds good|perfect|great|awesome|will do|ok|okay|👍|🙏)[\s!.,]*$/i
+//
+// People do not close a thread with one tidy word. They stack two or three
+// ("sounds good, thanks", "perfect thanks", "ok cool"), so this matches a run
+// of up to three ack tokens rather than a single exact string. Getting this
+// wrong is not dangerous, but it does make the assistant look brittle: an
+// escalation to a human because someone typed "thank you so much" instead of
+// "thanks" is a bad look in a demo about judgment.
+const ACK_TOKEN =
+  "thanks(?: so much| a lot| a bunch| again)?|thank you(?: so much| very much)?|ty|tysm|thx|got it|sounds good|sounds great|sounds like a plan|perfect|great|awesome|amazing|excellent|will do|ok|okay|k|cool|nice|appreciate it|much appreciated|no worries|np|you too|makes sense|understood|copy that|roger that|\u{1F44D}|\u{1F64F}|\u{1F389}"
+const GRATITUDE = new RegExp(`^(?:(?:${ACK_TOKEN})[\\s!.,?~-]*){1,3}$`, 'iu')
 
-// The client is informing, not asking.
+// The client is informing, not asking. A trailing '?' is NOT how you tell:
+// "I just submitted the form, can you confirm you got it" is a question with no
+// question mark, and treating it as a status update dropped it silently, which
+// is the only outcome in this system where nobody hears about a client at all.
+const ASK_CUE =
+  /\?|\b(?:can|could|would|will|is|are|do|does|did|should|when|what|where|who|how|why)\s+(?:you|we|i|it|this|that|they|there)\b/i
 const STATUS_UPDATE =
-  /\b(?:just )?(?:paid|submitted|sent|uploaded|booked it|signed|finished|completed|done with)\b(?![^.?!]*\?)/i
+  /\b(?:just )?(?:paid|submitted|sent|uploaded|booked it|signed|finished|completed|done with)\b/i
 
 // Simple process questions the assistant may answer in one or two sentences.
 // Each answer is written for its own question: a generic "someone will follow
@@ -191,6 +229,15 @@ export function simulateModel(redactedMessage: string): ReplyDecision {
 
   const hit = TRANSACTIONAL.find((t) => t.pattern.test(text))
   if (hit) {
+    // "Do not cancel Thursday" contains the word cancel and means the
+    // opposite. Never act on a negated request.
+    if (NEGATED_ACTION.test(text)) {
+      return {
+        ...base,
+        action: 'divert_borderline',
+        reasoning: 'the client is asking us NOT to do that, which is not a request to act on',
+      }
+    }
     // MIXED MESSAGES ARE THE TRAP. A transactional word plus the client saying
     // they will handle the next step is not a clean safe-zone reply.
     if (SELF_HANDLING.test(text)) {
@@ -229,7 +276,7 @@ export function simulateModel(redactedMessage: string): ReplyDecision {
     }
   }
 
-  if (STATUS_UPDATE.test(text)) {
+  if (STATUS_UPDATE.test(text) && !ASK_CUE.test(text)) {
     return { ...base, action: 'stay_out', reasoning: 'client is informing us, no reply or human action needed' }
   }
 

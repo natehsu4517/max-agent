@@ -95,7 +95,7 @@ export function runPipeline(rawMessage: string, opts: PipelineOptions): Pipeline
       decisive: true,
     })
 
-    trace.push(outcomeStep('skipped', false))
+    trace.push(outcomeStep('skipped', false, false))
 
     return {
       rawMessage,
@@ -237,7 +237,14 @@ export function runPipeline(rawMessage: string, opts: PipelineOptions): Pipeline
     }
   }
 
-  trace.push(outcomeStep(status, plan.needsSilent ?? false))
+  // Whether the client actually heard anything. Everything the page SAYS about
+  // the outcome keys off this rather than off the status, because
+  // `awaiting_human` covers both "the client got a holding note" and "the
+  // client got nothing", and those read very differently to the person who
+  // sent the message.
+  const clientHeardSomething = Boolean(outboundText)
+
+  trace.push(outcomeStep(status, plan.needsSilent ?? false, clientHeardSomething))
 
   return {
     rawMessage,
@@ -247,7 +254,7 @@ export function runPipeline(rawMessage: string, opts: PipelineOptions): Pipeline
     trace,
     outboundText,
     status,
-    headline: headlineFor(status, plan.needsSilent ?? false, decision.degraded),
+    headline: headlineFor(status, plan.needsSilent ?? false, decision.degraded, clientHeardSomething),
     handledBy: status === 'auto_sent' ? 'max' : status === 'skipped' ? 'nobody' : 'human',
   }
 }
@@ -324,20 +331,20 @@ export function plainFlag(flag: string): string {
   return flag
 }
 
-function outcomeStep(status: DraftStatus, silent: boolean): TraceStep {
+function outcomeStep(status: DraftStatus, silent: boolean, sentAck: boolean): TraceStep {
   return {
     layer: 3,
     title: 'What actually happened',
     technical: 'dispatch',
     kind: 'deterministic',
-    verdict: outcomeLabel(status),
-    detail: outcomeDetail(status, silent),
+    verdict: outcomeLabel(status, sentAck),
+    detail: outcomeDetail(status, silent, sentAck),
     flags: [],
     decisive: false,
   }
 }
 
-function outcomeLabel(status: DraftStatus): string {
+function outcomeLabel(status: DraftStatus, sentAck: boolean): string {
   switch (status) {
     case 'auto_sent':
       return 'Max answered it himself'
@@ -346,7 +353,7 @@ function outcomeLabel(status: DraftStatus): string {
     case 'blocked':
       return 'A draft with no send button'
     case 'awaiting_human':
-      return 'A person was asked to take it'
+      return sentAck ? 'A person was asked to take it' : 'A person was asked to write the reply'
     case 'skipped':
       return 'Nothing was sent, and nobody was pinged'
     default:
@@ -354,7 +361,7 @@ function outcomeLabel(status: DraftStatus): string {
   }
 }
 
-function outcomeDetail(status: DraftStatus, silent: boolean): string {
+function outcomeDetail(status: DraftStatus, silent: boolean, sentAck: boolean): string {
   switch (status) {
     case 'auto_sent':
       return 'A fixed, pre-written message, checked twice, posted in the thread. The team still sees a copy in their internal channel, so nothing Max says to a client is invisible to them.'
@@ -363,9 +370,12 @@ function outcomeDetail(status: DraftStatus, silent: boolean): string {
     case 'blocked':
       return 'The draft is there for a person to read, but the Send button is not rendered at all. Something that breaks the rules is never one tap away from a client.'
     case 'awaiting_human':
-      return silent
-        ? 'The client gets nothing at all. For legal and personal-data messages an automatic reply is itself the mistake, so a person handles it quietly and gets alerted with the blanked-out version.'
-        : 'The client gets a short note so they are not sitting in silence, and the account lead is pinged internally to reply properly.'
+      if (silent) {
+        return 'The client gets nothing at all. For legal and personal-data messages an automatic reply is itself the mistake, so a person handles it quietly and gets alerted with the blanked-out version.'
+      }
+      return sentAck
+        ? 'The client gets a short note so they are not sitting in silence, and the account lead is pinged internally to reply properly.'
+        : 'Max had nothing safe to say back, so it said nothing and pinged the account lead instead. A wrong holding line is worse than a few minutes of quiet, and the person now owns the whole reply.'
     case 'skipped':
       return 'Choosing to do nothing is a real outcome, and it gets counted in the daily summary exactly like the others.'
     default:
@@ -373,7 +383,12 @@ function outcomeDetail(status: DraftStatus, silent: boolean): string {
   }
 }
 
-function headlineFor(status: DraftStatus, silent: boolean, degraded: string | null): string {
+function headlineFor(
+  status: DraftStatus,
+  silent: boolean,
+  degraded: string | null,
+  sentAck: boolean
+): string {
   if (degraded) return 'The AI call failed, so Max fell back to a draft for a person.'
   switch (status) {
     case 'auto_sent':
@@ -383,9 +398,10 @@ function headlineFor(status: DraftStatus, silent: boolean, degraded: string | nu
     case 'blocked':
       return 'Max wanted to send something it should not have. The draft has no send button.'
     case 'awaiting_human':
-      return silent
-        ? 'Max said nothing to the client and quietly alerted a person.'
-        : 'Max acknowledged the client and handed the real reply to a person.'
+      if (silent) return 'Max said nothing to the client and quietly alerted a person.'
+      return sentAck
+        ? 'Max acknowledged the client and handed the real reply to a person.'
+        : 'Max said nothing back and handed the whole reply to a person.'
     case 'skipped':
       return 'Max decided nothing was needed from anyone.'
     default:

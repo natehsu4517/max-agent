@@ -84,9 +84,13 @@ export function handoffAck(first: string, category: SensitivityCategory | null):
     case 'problem':
       return `Thanks for flagging that, ${who}. I have pulled your account lead in on it now.`
     case 'money':
-      return `Good question, ${who}. Your account lead will walk you through the numbers rather than me guessing at them.`
+      // Not "good question": this fires on statements too ("paid the invoice
+      // yesterday"), and calling a statement a question reads like a bot.
+      return `Your account lead will walk you through the numbers on that one, ${who}, rather than me guessing at them.`
     case 'commitment':
       return `I do not want to give you a date I cannot stand behind, ${who}, so your account lead is picking this up.`
+    case 'advice':
+      return `That is your account lead's call rather than mine, ${who}. I have passed it to them.`
     case 'complaint':
       return `I hear you, ${who}. Your account lead is looking at this now and will come back to you directly.`
     default:

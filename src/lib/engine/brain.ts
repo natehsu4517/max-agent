@@ -69,8 +69,10 @@ export const SAFE_ZONE_SYSTEM = [
   '  - anything about pricing, billing or scope: amounts, rates, what the invoice covers, whether',
   '    something is in scope: category "money".',
   '  - complaints, refund/cancel-the-contract, dissatisfaction, threats to leave: "complaint".',
-  '  - requests for a commitment, guarantee, a delivery date, or advice ("will this be done by',
-  '    Friday?", "should we do X or Y?", "how long until launch?"): "commitment".',
+  '  - requests for a commitment, guarantee or a delivery date ("will this be done by Friday?",',
+  '    "how long until launch?"): "commitment".',
+  '  - requests for a recommendation or an opinion ("should we do X or Y?", "what would you',
+  '    do here?"): "advice". A judgment call belongs to the person who owns the account.',
   '  - anything legal or adversarial (lawyer, lawsuit, dispute, chargeback, breach): "legal".',
   '  - a pasted SSN / bank / card / account number, or any sensitive personal data: "pii".',
   '  For divert_sensitive, set needs_silent=true ONLY for "legal" or "pii" (the client should get',
@@ -157,7 +159,14 @@ export function planDispatch(
       sensitivityCategory: forced,
       needsSilent: true,
       flags: [`PREFILTER:${forced}`],
-      reasoning: decision.reasoning || `deterministic pre-filter: ${forced}`,
+      // The pre-filter's own reason, not the model's. The model's reasoning
+      // describes a decision that was overruled, and showing it on the review
+      // card explained a pasted SSN as "not on the short list of things Max
+      // may answer alone" instead of naming the actual cause.
+      reasoning:
+        forced === 'pii'
+          ? 'personal data in the message, decided before the AI ran'
+          : 'legal or adversarial wording, decided before the AI ran',
     }
   }
 

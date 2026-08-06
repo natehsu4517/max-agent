@@ -167,11 +167,31 @@ export function ReviewPane({
                         </span>{" "}
                         {card.acknowledged
                           ? "picked this up."
-                          : "this one needs you, and the client has not been left waiting in silence."}
+                          : "this one needs you."}{" "}
+                        {/* What the client actually heard. Saying "not left waiting in
+                            silence" on a card where nothing was sent is the kind of
+                            small lie that costs the whole page its credibility. */}
+                        <span className="text-text-secondary">
+                          {card.needsSilent
+                            ? "The client got no automated reply at all, which is deliberate for this category."
+                            : card.draftText
+                              ? "The client has a short holding note, nothing more."
+                              : "Max had nothing safe to say, so the client is waiting on you."}
+                        </span>
                       </p>
                       <p className="mt-2 border-l-2 border-border pl-2.5 font-sans text-[13.5px] leading-relaxed text-text-secondary">
                         {card.clientMessage}
                       </p>
+                      {!card.needsSilent && card.draftText && (
+                        <>
+                          <div className="mt-3">
+                            <Label>Already sent to the client</Label>
+                          </div>
+                          <p className="mt-1 border-l-2 border-border pl-2.5 font-sans text-[13.5px] leading-relaxed text-text">
+                            {renderMrkdwn(card.draftText)}
+                          </p>
+                        </>
+                      )}
                       <p className="mt-2 font-sans text-[12.5px] leading-snug text-text-muted">
                         {card.reasoning}
                       </p>

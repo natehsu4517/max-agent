@@ -338,12 +338,13 @@ test('each hand-off category gets its own wording', () => {
     'How much is the extra checkout work going to cost us?',
     'Can you promise the checkout work will be done by Friday?',
     'Honestly we are pretty frustrated with how slow this has been going.',
+    'Should we go with the new logo or keep the old one?',
   ]) {
     const out = runPipeline(msg, OPTS).outboundText
     assert.ok(out, `expected an acknowledgement for: ${msg}`)
     acks.add(out!)
   }
-  assert.equal(acks.size, 4, 'every category should read differently, not one canned line')
+  assert.equal(acks.size, 5, 'every category should read differently, not one canned line')
 })
 
 test('a model failure never auto-sends, it produces a draft', () => {
@@ -509,4 +510,95 @@ test('a model downgrade moves the decision off the model layer', () => {
   const reconcile = result.trace.find((s) => s.technical.startsWith('planDispatch'))
   assert.equal(model?.decisive, false, 'the model did not have the last word here')
   assert.equal(reconcile?.decisive, true)
+})
+
+// Regressions from stress-testing the demo the way a person actually uses it:
+// typing whole sentences into the composer rather than clicking the buttons.
+
+test('a negated request is never acted on', () => {
+  for (const msg of [
+    'please do NOT cancel our call on thursday',
+    'I do not want to reschedule, thursday is fine',
+    'no need to cancel, we are all good',
+    "don't move the call please",
+  ]) {
+    const result = runPipeline(msg, OPTS)
+    assert.notEqual(result.status, 'auto_sent', `auto-sent on a negated request: ${msg}`)
+    assert.equal(result.outboundText, null, `said something back to: ${msg}`)
+  }
+})
+
+test('the page never claims an acknowledgement it did not send', () => {
+  for (const msg of [
+    'any update on the homepage',
+    'bump',
+    'hey are you a bot',
+    'here is my ssn 123-45-6789',
+    'thanks! also can you send the calendar link',
+    'what time is our call again',
+  ]) {
+    const r = runPipeline(msg, OPTS)
+    if (r.outboundText) continue
+    assert.doesNotMatch(
+      r.headline,
+      /acknowledged the client|gets a short note/,
+      `headline claims a reply went out, but nothing did: ${msg}`
+    )
+    const outcome = r.trace[r.trace.length - 1]
+    assert.doesNotMatch(
+      outcome.detail,
+      /gets a short note|not sitting in silence/,
+      `outcome step claims a reply went out, but nothing did: ${msg}`
+    )
+  }
+})
+
+test('"down" only means an outage when a verb says so', () => {
+  const outage = runPipeline('the staging site is down again', OPTS)
+  assert.equal(outage.plan.sensitivityCategory, 'problem')
+
+  for (const msg of [
+    "sounds good, I'm down for thursday",
+    "let's sit down and go over it next week",
+    'I am down in Miami all next week',
+  ]) {
+    const r = runPipeline(msg, OPTS)
+    assert.notEqual(r.plan.sensitivityCategory, 'problem', `read as an outage report: ${msg}`)
+    assert.equal(r.outboundText, null, `apologised for a problem that does not exist: ${msg}`)
+  }
+})
+
+test('a question buried in a status update is never silently dropped', () => {
+  const asked = runPipeline('I just submitted the form, can you confirm you got it', OPTS)
+  assert.notEqual(asked.status, 'skipped', 'a client question must never resolve to nobody hearing about it')
+  assert.equal(asked.handledBy, 'human')
+
+  // A plain status update with no question in it still costs nobody anything.
+  const told = runPipeline('just sent over the files', OPTS)
+  assert.equal(told.status, 'skipped')
+})
+
+test('acknowledgements people actually type are treated as acknowledgements', () => {
+  for (const msg of [
+    'thanks!',
+    'thank you so much',
+    'sounds good, thanks',
+    'perfect thanks',
+    'ok cool',
+    'appreciate it',
+    'no worries',
+    'great, ty',
+  ]) {
+    const r = runPipeline(msg, OPTS)
+    assert.equal(r.status, 'skipped', `escalated a plain thank-you to a person: ${msg}`)
+  }
+})
+
+test('a Layer 0 decision explains itself, not the model it overruled', () => {
+  const pii = runPipeline('here is my ssn 123-45-6789 for the paperwork', OPTS)
+  assert.match(pii.plan.reasoning, /personal data/i)
+  assert.doesNotMatch(pii.plan.reasoning, /short list/i)
+
+  const legal = runPipeline('I have asked our attorney to look at the contract', OPTS)
+  assert.match(legal.plan.reasoning, /legal/i)
 })

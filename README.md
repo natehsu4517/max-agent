@@ -128,11 +128,18 @@ npm run dev
 npm test
 ```
 
-45 tests: every compliance rule, PII detection in each common grouping, the Layer 0 override, the
+54 tests: every compliance rule, PII detection in each common grouping, the Layer 0 override, the
 compliance downgrade, the hallucinated-link guard, and end-to-end assertions for each demo case.
 The safe-zone prompt is pinned by a test, so deleting one of its guardrails fails CI. A test also
 asserts that each hand-off category is worded differently, because one generic line for every
 situation is what makes an assistant feel like a machine.
+
+Six of them come from stress-testing the demo the way people actually use it, typing sentences into
+the composer instead of clicking the buttons. Those found the bugs worth having: a negated request
+("please do NOT cancel our call") being acted on as a request, `down` matching "I'm down for
+Thursday" and apologising for an outage that never happened, a question with no question mark
+("can you confirm you got it") being filed as a status update and dropped silently, and the page
+narrating an acknowledgement to the client in cases where nothing had been sent.
 
 ## Stack
 
