@@ -1,0 +1,105 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #f2efe9;
+  --color-surface: #e8e4de;
+  --color-surface-elevated: #fff;
+  --color-text: #0a0a0a;
+  --color-text-secondary: #3a3a3a;
+  /* The portfolio's #999 muted grey measures 2.5:1 on this cream and fails AA.
+     Darkened to clear 4.5:1 while staying visibly a third tier below secondary,
+     because most labels on this page are set in it at 9-10px. */
+  --color-text-muted: #6e6a63;
+  --color-accent: #0a0a0a;
+  --color-accent-hover: #333;
+  /* Borders carry meaning here (they are the only card edge), so the default
+     hairline is darkened to clear the 3:1 non-text contrast bar. */
+  --color-border: #a49e93;
+  --color-border-light: #c4bfb5;
+
+  /* State signals. Used only as small dots and mono label text, never as
+     filled pills: the page stays monochrome and the signal stays quiet. */
+  --color-signal-live: #1a7f4b;
+  --color-signal-hold: #9a6b12;
+  --color-signal-block: #a63a2c;
+}
+
+/* `inline` is required here, not optional: these values point at variables
+   next/font defines on <body>, and a plain @theme block cannot follow that
+   indirection, so it emits nothing and every font-* utility silently dies. */
+@theme inline {
+  --font-sans: var(--font-space-grotesk), system-ui, sans-serif;
+  --font-body: var(--font-instrument-sans), system-ui, sans-serif;
+  --font-cdg: var(--font-jost), "Futura", "Helvetica Neue", Helvetica, sans-serif;
+  --font-mono: var(--font-space-mono), "SF Mono", "Consolas", monospace;
+}
+
+/* No global `* { margin: 0; padding: 0 }` reset here. Tailwind v4 puts its
+   utilities in a cascade layer, and an unlayered universal rule beats every
+   layered one, which silently deletes every p-* and m-* class on the page.
+   Preflight already zeroes margins and sets border-box. */
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-instrument-sans), system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--color-text);
+  color: var(--color-bg);
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+*:focus-visible {
+  outline: 1px solid var(--color-text);
+  outline-offset: 2px;
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.rise-in {
+  animation: rise-in 200ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
