@@ -15,6 +15,13 @@
  * The rule precedence below mirrors the prompt: the always-divert categories
  * outrank the safe zone, and a transactional ask only earns a link when that ask
  * is the WHOLE message.
+ *
+ * A standing constraint on this file: the simulation must never be more brittle
+ * than the thing it stands in for. A real model does not care whether someone
+ * typed a question mark or capitalised a sentence, so no rule here may depend on
+ * punctuation to recognise a question. People drop question marks in Slack
+ * constantly, and a demo that answers "are we still on for 2?" but shrugs at
+ * "are we still on for 2" is showing a bug, not a policy.
  */
 
 import type { LinkIntent, ReplyDecision, SensitivityCategory } from './types'
@@ -29,7 +36,7 @@ const SENSITIVE_RULES: Array<{
   {
     category: 'commitment',
     pattern:
-      /\bguarantee|\bcan you promise\b|\bhow long until\b|\bwhen will (?:it|this|we|you)\b|\bwill (?:it|this|we|you)\b[^.?!]{0,40}\b(?:be )?(?:done|ready|finished|live|ship|launch|deliver)\b|\bby (?:friday|monday|tuesday|wednesday|thursday|next week|end of)\b[^.?!]{0,20}\?|\bshould (?:i|we)\b/i,
+      /\bguarantee|\bcan you promise\b|\bhow long until\b|\bwhen will (?:it|this|we|you)\b|\bwill (?:it|this|we|you)\b[^.?!]{0,40}\b(?:be )?(?:done|ready|finished|live|ship|launch|deliver)\b|\bshould (?:i|we)\b/i,
     reasoning: 'the client is asking for a commitment on timing or outcome that the assistant cannot make',
   },
   {
@@ -97,17 +104,18 @@ const STATUS_UPDATE =
 // up" pasted onto everything is what makes an assistant feel like a machine.
 const PROCESS_RULES: Array<{ pattern: RegExp; reply: string; reasoning: string }> = [
   {
-    pattern: /\b(?:did you (?:get|receive)|have you (?:got|received)|come through|go through|land)\b[^?]*\?/i,
+    pattern: /\b(?:did you (?:get|receive)|have you (?:got|received)|did .{0,25}(?:come through|go through|land))\b/i,
     reply: 'Yes, that came through on our end. Your account lead will take a look and follow up.',
     reasoning: 'a receipt confirmation, with nothing substantive riding on it',
   },
   {
-    pattern: /\b(?:office hours|what time.{0,20}(?:open|available)|when are you (?:open|around)|working hours)\b/i,
+    pattern:
+      /\b(?:office hours|working hours|what (?:are )?your hours|what time.{0,20}(?:open|available)|when are you (?:open|around|available))\b/i,
     reply: 'The team is around weekdays, 9 to 6 Eastern. Anything sent after that gets picked up the next morning.',
     reasoning: 'an office-hours question, purely logistical',
   },
   {
-    pattern: /\bwhat(?:'s| is| happens)\b[^?]{0,40}\bnext\b[^?]*\?/i,
+    pattern: /\bwhat(?:'s| is| happens)\b[^.?!]{0,40}\bnext\b/i,
     reply: 'Your account lead will walk you through the next step on the upcoming call. Nothing is needed from you before then.',
     reasoning: 'a general process question with no numbers or dates attached',
   },
@@ -122,7 +130,8 @@ const PROCESS_RULES: Array<{ pattern: RegExp; reply: string; reasoning: string }
     reasoning: 'pointing at a location the client already has access to',
   },
   {
-    pattern: /\bare (?:we|you) (?:still )?(?:on|good) for\b[^?]*\?|\bis (?:our|the) call still\b[^?]*\?/i,
+    pattern:
+      /\bare (?:we|you) (?:still )?(?:on|good) for\b|\bis (?:our|the) (?:call|meeting) still\b|\bare we still (?:meeting|talking|good)\b|\bwe still on\b/i,
     reply: 'Yes, that is still on the calendar as scheduled.',
     reasoning: 'confirming a booking that already exists, no new commitment made',
   },
@@ -225,10 +234,15 @@ export function simulateModel(redactedMessage: string): ReplyDecision {
   }
 
   // When in doubt between reply and divert_borderline, choose divert_borderline.
+  // This is the default for anything unrecognised, and it is the point: the
+  // list of things Max may answer alone is short and closed on purpose, so
+  // "I do not recognise this" and "a person should take it" are the same
+  // answer rather than an error.
   return {
     ...base,
     action: 'divert_borderline',
-    reasoning: 'not confidently inside the safe zone, so a human reviews it',
+    reasoning:
+      'this is not on the short list of things Max may answer alone, so it goes to a person by default',
   }
 }
 

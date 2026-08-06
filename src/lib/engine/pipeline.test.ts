@@ -5,6 +5,7 @@ import { checkCompliance, inboundHasPII, redactPII, sanitizeDashes } from './com
 import { planDispatch, preFilterForced, SAFE_ZONE_SYSTEM } from './brain'
 import { simulateModel, legacyWouldAutoSend } from './simulate'
 import { runPipeline, plainFlag } from './pipeline'
+import { SCENARIOS } from '../scenarios'
 import type { ReplyDecision } from './types'
 
 const OPTS = {
@@ -426,6 +427,67 @@ test('every flag has a plain-English reading', () => {
   ]
   for (const c of codes) {
     assert.notEqual(plainFlag(c), c, `no plain-English reading for ${c}`)
+  }
+})
+
+// Punctuation robustness. A real model does not care about a missing question
+// mark, so the simulation standing in for it must not either.
+
+test('dropping the question mark does not change the answer', () => {
+  const questions = [
+    'Are we still on for tomorrow at 2?',
+    'Did you get the brand files I sent over?',
+    'Can I get on your calendar this week?',
+    'How much is the extra checkout work going to cost us?',
+    'Can you promise the checkout work will be done by Friday?',
+    'Where do I submit a new project request?',
+    'Any chance we can reschedule Thursday?',
+    "What's next after this round?",
+  ]
+  for (const q of questions) {
+    const withMark = runPipeline(q, OPTS)
+    const without = runPipeline(q.replace(/\?/g, ''), OPTS)
+    assert.equal(
+      without.plan.action,
+      withMark.plan.action,
+      `"${q}" changed answer when the question mark was dropped: ${withMark.plan.action} -> ${without.plan.action}`
+    )
+    assert.equal(without.status, withMark.status, `"${q}" changed status without its question mark`)
+  }
+})
+
+test('casing and trailing punctuation do not change the answer', () => {
+  const questions = [
+    'Are we still on for tomorrow at 2?',
+    'Can I get on your calendar this week?',
+    'Staging is throwing a 500 on the payment step',
+    'Did you get the brand files I sent over?',
+  ]
+  for (const q of questions) {
+    const base = runPipeline(q, OPTS)
+    for (const variant of [q.toLowerCase(), q.toUpperCase(), q.trim() + ' ', '  ' + q]) {
+      const got = runPipeline(variant, OPTS)
+      assert.equal(
+        got.plan.action,
+        base.plan.action,
+        `"${variant}" disagreed with "${q}": ${base.plan.action} -> ${got.plan.action}`
+      )
+    }
+  }
+})
+
+test('the built-in scenarios survive being retyped by hand', () => {
+  // Exactly what a visitor does: click a case, then type the same thing
+  // themselves without the punctuation. The two must agree.
+  for (const s of SCENARIOS) {
+    if (s.humanRepliedDuringHold || s.modelFailed || s.modelOverride) continue
+    const canned = runPipeline(s.message, OPTS)
+    const retyped = runPipeline(s.message.replace(/\?/g, '').toLowerCase(), OPTS)
+    assert.equal(
+      retyped.plan.action,
+      canned.plan.action,
+      `scenario "${s.label}" behaves differently when retyped: ${canned.plan.action} -> ${retyped.plan.action}`
+    )
   }
 })
 
