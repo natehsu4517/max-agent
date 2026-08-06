@@ -4,7 +4,7 @@ An AI assistant that lives in shared client Slack channels. It answers a narrow 
 scheduling questions on its own using fixed templates, and turns everything else into a draft a
 human taps to send.
 
-**Live demo:** [max-agent-demo.vercel.app](https://max-agent-demo.vercel.app)
+**Live demo:** [max-agent-nine.vercel.app](https://max-agent-nine.vercel.app)
 
 The interesting part is not that it drafts replies. It is the shape of the safety around the model:
 
