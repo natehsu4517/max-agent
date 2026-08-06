@@ -11,7 +11,7 @@
  * link the client ever receives.
  */
 
-import type { LinkIntent } from './types'
+import type { LinkIntent, SensitivityCategory } from './types'
 
 /** Demo URLs. Nothing here resolves to a real booking system. */
 export const BOOKING_URL = 'https://example.com/book/check-in'
@@ -70,8 +70,28 @@ export function afterHoursAck(first: string): string {
   )
 }
 
-export function handoffAck(first: string): string {
-  return `Thanks ${name(first)}, I have passed this to your account lead and someone will follow up shortly.`
+/**
+ * The hand-off acknowledgement, worded for what the client actually said.
+ *
+ * A single generic "someone will follow up" for every case reads like a
+ * machine that did not listen. These stay short and promise nothing, but they
+ * name the thing the client raised, which is the difference between an
+ * acknowledgement and a receipt.
+ */
+export function handoffAck(first: string, category: SensitivityCategory | null): string {
+  const who = name(first)
+  switch (category) {
+    case 'problem':
+      return `Thanks for flagging that, ${who}. I have pulled your account lead in on it now.`
+    case 'money':
+      return `Good question, ${who}. Your account lead will walk you through the numbers rather than me guessing at them.`
+    case 'commitment':
+      return `I do not want to give you a date I cannot stand behind, ${who}, so your account lead is picking this up.`
+    case 'complaint':
+      return `I hear you, ${who}. Your account lead is looking at this now and will come back to you directly.`
+    default:
+      return `Thanks ${who}, I have passed this to your account lead and someone will follow up shortly.`
+  }
 }
 
 /** Dispatcher for the transactional intents. 'request' has no advisor params. */

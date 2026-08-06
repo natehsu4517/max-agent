@@ -52,7 +52,12 @@ this repo touches real data or real credentials.
 That boundary is drawn on the page itself rather than hidden. Type your own message into the demo
 and the regexes judging it are the real ones.
 
+The demo is written to be readable without knowing any of this. Every step explains itself in plain
+language first, with the function name an engineer would grep for underneath it.
+
 ## The cases worth clicking
+
+Nineteen scenarios, grouped by what they demonstrate. The interesting ones:
 
 **The mixed cancel.** "Cancel my call, but I'll circle back with times." This is a real regression.
 The system before this one was a single-word intent classifier, and one token cannot represent a
@@ -71,6 +76,12 @@ model never runs. Doing nothing is a real outcome, and the cheapest one.
 **A pasted SSN.** Redacted before storage, never shown to the model, and met with deliberate
 silence, because an automated "got it!" is itself the wrong response to a client pasting an SSN
 into a channel.
+
+**The AI is down.** An outage is not permission to guess. Every failure resolves the same way a
+bad answer does: a person sees a draft, and nothing goes out on its own.
+
+**Sent at 11pm.** Nobody is answering tonight, and silence until morning reads as being ignored, so
+the client gets one short note that promises nothing. Legal and PII stay silent even then.
 
 ## What it does inside Slack
 
@@ -117,10 +128,11 @@ npm run dev
 npm test
 ```
 
-25 tests over the ported layers: every compliance rule, PII detection in each common grouping, the
-Layer 0 override, the compliance downgrade, the hallucinated-link guard, and end-to-end assertions
-for each demo case. The safe-zone prompt is pinned by a test, so deleting one of its guardrails
-fails CI.
+45 tests: every compliance rule, PII detection in each common grouping, the Layer 0 override, the
+compliance downgrade, the hallucinated-link guard, and end-to-end assertions for each demo case.
+The safe-zone prompt is pinned by a test, so deleting one of its guardrails fails CI. A test also
+asserts that each hand-off category is worded differently, because one generic line for every
+situation is what makes an assistant feel like a machine.
 
 ## Stack
 

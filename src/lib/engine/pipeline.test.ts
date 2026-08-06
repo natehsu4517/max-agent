@@ -4,7 +4,7 @@ import assert from 'node:assert/strict'
 import { checkCompliance, inboundHasPII, redactPII, sanitizeDashes } from './compliance'
 import { planDispatch, preFilterForced, SAFE_ZONE_SYSTEM } from './brain'
 import { simulateModel, legacyWouldAutoSend } from './simulate'
-import { runPipeline } from './pipeline'
+import { runPipeline, plainFlag } from './pipeline'
 import type { ReplyDecision } from './types'
 
 const OPTS = {
@@ -280,8 +280,10 @@ test('the hand-off ack passes the outbound compliance gate like any other messag
   assert.equal(result.status, 'awaiting_human')
   assert.ok(result.outboundText)
   assert.equal(checkCompliance(result.outboundText!).passed, true)
+  // Match on the technical name, not the user-facing title: reworded copy
+  // should never fail a behavioural test.
   assert.ok(
-    result.trace.some((s) => s.title === 'Outbound re-check'),
+    result.trace.some((s) => s.technical === 'checkCompliance (outbound)'),
     'a client-facing ack must go through the outbound re-check'
   )
 })
@@ -300,6 +302,133 @@ test('only one step in a trace claims it decided the outcome', () => {
   }
 })
 
+// The added scenarios, and the plain-language layer over them.
+
+test('legal wording is silent and decided before the model runs', () => {
+  const result = runPipeline(
+    'I have asked our attorney to look at the contract before we go any further.',
+    OPTS
+  )
+  assert.equal(result.plan.sensitivityCategory, 'legal')
+  assert.equal(result.plan.needsSilent, true)
+  assert.equal(result.outboundText, null, 'legal messages get no automated reply at all')
+  assert.ok(result.plan.flags.includes('PREFILTER:legal'))
+})
+
+test('a complaint is handed over, not answered', () => {
+  const result = runPipeline('Honestly we are pretty frustrated with how slow this has been going.', OPTS)
+  assert.equal(result.plan.sensitivityCategory, 'complaint')
+  assert.notEqual(result.status, 'auto_sent')
+})
+
+test('a booking ask carrying bad news does not auto-send', () => {
+  const result = runPipeline(
+    'Can we get time on the calendar? The staging build is erroring out for me.',
+    OPTS
+  )
+  assert.notEqual(result.status, 'auto_sent')
+  assert.equal(result.plan.sensitivityCategory, 'problem')
+})
+
+test('each hand-off category gets its own wording', () => {
+  const acks = new Set<string>()
+  for (const msg of [
+    'Staging is throwing a 500 on the payment step',
+    'How much is the extra checkout work going to cost us?',
+    'Can you promise the checkout work will be done by Friday?',
+    'Honestly we are pretty frustrated with how slow this has been going.',
+  ]) {
+    const out = runPipeline(msg, OPTS).outboundText
+    assert.ok(out, `expected an acknowledgement for: ${msg}`)
+    acks.add(out!)
+  }
+  assert.equal(acks.size, 4, 'every category should read differently, not one canned line')
+})
+
+test('a model failure never auto-sends, it produces a draft', () => {
+  const result = runPipeline('Can we push our call to next week?', { ...OPTS, modelFailed: true })
+  assert.notEqual(result.status, 'auto_sent')
+  assert.ok(result.trace.some((s) => s.flags.includes('DEGRADED:api_error')))
+  assert.match(result.headline, /failed/i)
+})
+
+test('an invented link is caught even when the model sounds confident', () => {
+  const result = runPipeline('Can you send me the scheduling link again?', {
+    ...OPTS,
+    modelOverride: {
+      action: 'reply',
+      linkIntent: null,
+      replyText: 'Sure, you can book any time at calendly.com/larkfield-goods/check-in.',
+      sensitivityCategory: null,
+      needsSilent: false,
+      reasoning: 'wrote the address from memory',
+      degraded: null,
+    },
+  })
+  assert.notEqual(result.status, 'auto_sent')
+  assert.ok(result.plan.flags.includes('GENERATED_LINK'))
+})
+
+test('after hours, a hand-off gets a holding note instead of silence', () => {
+  const result = runPipeline('Quick one, are we still planning to launch this month?', {
+    ...OPTS,
+    afterHours: true,
+  })
+  assert.equal(result.status, 'awaiting_human')
+  assert.ok(result.outboundText, 'the client should not be left in silence overnight')
+  assert.equal(checkCompliance(result.outboundText!).passed, true)
+})
+
+test('after-hours never breaks the silence on legal or PII', () => {
+  const result = runPipeline('here is my ssn 123-45-6789', { ...OPTS, afterHours: true })
+  assert.equal(result.outboundText, null, 'silent categories stay silent even after hours')
+})
+
+test('every step carries both a plain reading and a technical name', () => {
+  for (const msg of ['thanks!', 'Can I get on your calendar this week?', 'here is my ssn 123-45-6789']) {
+    for (const step of runPipeline(msg, OPTS).trace) {
+      assert.ok(step.title.length > 0, 'missing plain title')
+      assert.ok(step.technical.length > 0, `missing technical name on: ${step.title}`)
+      assert.ok(step.verdict.length > 0, `missing verdict on: ${step.title}`)
+      // The plain title must not leak the enum vocabulary at a reader.
+      assert.doesNotMatch(step.title, /divert_|planDispatch|Layer \d/)
+    }
+  }
+})
+
+test('every outcome produces a headline a non-engineer can read', () => {
+  const seen = new Set<string>()
+  for (const msg of [
+    'Can I get on your calendar this week?',
+    'thanks!',
+    'here is my ssn 123-45-6789',
+    'Staging is throwing a 500 on the payment step',
+  ]) {
+    const h = runPipeline(msg, OPTS).headline
+    assert.ok(h.length > 0)
+    assert.doesNotMatch(h, /divert_|auto_sent|planDispatch/)
+    seen.add(h)
+  }
+  assert.ok(seen.size >= 3, 'headlines should distinguish the outcomes')
+})
+
+test('every flag has a plain-English reading', () => {
+  const codes = [
+    'COMPLIANCE:specific_amount',
+    'COMPLIANCE:delivery_promise',
+    'AUTO_BLOCKED',
+    'GENERATED_LINK',
+    'PREFILTER:pii',
+    'PREFILTER:legal',
+    'SKIPPED:reply_to_staff',
+    'REDACTED',
+    'DEGRADED:api_error',
+  ]
+  for (const c of codes) {
+    assert.notEqual(plainFlag(c), c, `no plain-English reading for ${c}`)
+  }
+})
+
 test('a model downgrade moves the decision off the model layer', () => {
   const result = runPipeline('How much can I get approved for?', {
     ...OPTS,
@@ -315,7 +444,7 @@ test('a model downgrade moves the decision off the model layer', () => {
   })
   assert.equal(result.status, 'blocked')
   const model = result.trace.find((s) => s.kind === 'model')
-  const reconcile = result.trace.find((s) => s.title.startsWith('Layer 2'))
+  const reconcile = result.trace.find((s) => s.technical.startsWith('planDispatch'))
   assert.equal(model?.decisive, false, 'the model did not have the last word here')
   assert.equal(reconcile?.decisive, true)
 })

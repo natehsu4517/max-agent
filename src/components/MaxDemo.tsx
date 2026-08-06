@@ -6,7 +6,7 @@ import { ReviewPane } from "./ReviewPane";
 import { TracePanel } from "./TracePanel";
 import { runPipeline } from "@/lib/engine/pipeline";
 import { legacyClassify, legacyWouldAutoSend } from "@/lib/engine/simulate";
-import { ADVISOR, CHANNEL_HISTORY, CLIENT, SCENARIOS, type Scenario } from "@/lib/scenarios";
+import { ADVISOR, CHANNEL_HISTORY, CLIENT, GROUPS, SCENARIOS, type Scenario } from "@/lib/scenarios";
 import type { ChatMessage, PipelineResult, ReviewCard, Scorecard } from "@/lib/engine/types";
 
 let seq = 0;
@@ -41,6 +41,8 @@ export function MaxDemo() {
       text: string,
       opts: {
         humanRepliedDuringHold?: boolean;
+        afterHours?: boolean;
+        modelFailed?: boolean;
         scenarioId?: string | null;
         modelOverride?: Scenario["modelOverride"];
       } = {}
@@ -54,6 +56,8 @@ export function MaxDemo() {
         advisorName: ADVISOR.name,
         advisorMention: ADVISOR.mention,
         humanRepliedDuringHold: opts.humanRepliedDuringHold,
+        afterHours: opts.afterHours,
+        modelFailed: opts.modelFailed,
         modelOverride: opts.modelOverride,
         slots: ["Tue 10:00 AM", "Wed 2:30 PM"],
       });
@@ -150,6 +154,8 @@ export function MaxDemo() {
     (s: Scenario) => {
       process(s.message, {
         humanRepliedDuringHold: s.humanRepliedDuringHold,
+        afterHours: s.afterHours,
+        modelFailed: s.modelFailed,
         modelOverride: s.modelOverride,
         scenarioId: s.id,
       });
@@ -261,43 +267,57 @@ export function MaxDemo() {
           The model never gets the last word.
         </h1>
 
-        <p className="mt-6 font-body text-[15.5px] leading-[1.75] text-text-secondary max-w-[64ch]">
-          Max sits in shared client Slack channels. It answers a narrow band of routine scheduling
-          questions on its own, in thread, and turns everything else into a draft a person taps to
-          send. The model is one layer in the middle: deterministic code on both sides can only
-          narrow what it decided, never widen it.
+        <p className="mt-6 font-body text-[16px] leading-[1.75] text-text-secondary max-w-[64ch]">
+          Max is an AI assistant that sits in the Slack channels a company shares with its clients.
+          It answers a short list of routine scheduling questions by itself. Everything else it turns
+          into a draft, and waits for a person to press send.
         </p>
-        <p className="mt-3 font-body text-[15.5px] leading-[1.75] text-text-secondary max-w-[64ch]">
-          Run a case below, or just type into the channel as the client.
+        <p className="mt-4 font-body text-[16px] leading-[1.75] text-text-secondary max-w-[64ch]">
+          The AI is only the middle step. Plain code runs before it and after it, and that code can
+          only ever make Max do <em className="not-italic font-semibold text-text">less</em> than the
+          AI suggested, never more. Pick a case below and watch what happens on the right, then read
+          how it decided underneath.
         </p>
 
         <div className="mt-9 h-px bg-text opacity-20" />
       </header>
 
-      <nav className="mt-6 flex flex-wrap items-center gap-2" aria-label="Scenarios">
-        {SCENARIOS.map((s) => {
-          const on = activeScenario === s.id;
-          return (
-            <button
-              key={s.id}
-              onClick={() => runScenario(s)}
-              aria-pressed={on}
-              className={`rounded-[4px] border px-3 py-2 font-body text-[13.5px] transition-colors ${
-                on
-                  ? "border-text bg-text text-bg"
-                  : "border-border text-text-secondary hover:border-text hover:text-text"
-              }`}
-            >
-              {s.label}
-            </button>
-          );
-        })}
-        <button
-          onClick={reset}
-          className="ml-auto rounded-[4px] border border-border-light px-3 py-2 font-body text-[13.5px] text-text-muted transition-colors hover:border-text hover:text-text"
-        >
-          Reset
-        </button>
+      <nav className="mt-8 flex flex-col gap-6" aria-label="Scenarios">
+        {GROUPS.map((g) => (
+          <div key={g.id} className="grid grid-cols-1 gap-x-8 gap-y-2 md:grid-cols-[190px_1fr]">
+            <div>
+              <h2 className="font-body text-[14px] font-semibold text-text">{g.title}</h2>
+              <p className="mt-1 font-body text-[12.5px] leading-[1.6] text-text-muted">{g.blurb}</p>
+            </div>
+            <div className="flex flex-wrap content-start gap-2">
+              {g.scenarios.map((s) => {
+                const on = activeScenario === s.id;
+                return (
+                  <button
+                    key={s.id}
+                    onClick={() => runScenario(s)}
+                    aria-pressed={on}
+                    className={`h-fit rounded-[4px] border px-3 py-2 font-body text-[13.5px] transition-colors ${
+                      on
+                        ? "border-text bg-text text-bg"
+                        : "border-border text-text-secondary hover:border-text hover:text-text"
+                    }`}
+                  >
+                    {s.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+        <div className="flex justify-end">
+          <button
+            onClick={reset}
+            className="rounded-[4px] border border-border-light px-3 py-2 font-body text-[13.5px] text-text-muted transition-colors hover:border-text hover:text-text"
+          >
+            Reset the channel
+          </button>
+        </div>
       </nav>
 
       {active && (

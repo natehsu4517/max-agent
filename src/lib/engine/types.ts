@@ -42,12 +42,22 @@ export type DraftStatus =
   | 'skipped'
   | 'awaiting_human'
 
-/** One layer's verdict, rendered in the trace panel. */
+/**
+ * One layer's verdict, rendered in the trace panel.
+ *
+ * Every step carries a plain-English reading and a technical one. The page
+ * leads with the plain version, because most people looking at this are
+ * evaluating the judgment, not the implementation.
+ */
 export interface TraceStep {
   layer: 0 | 1 | 2 | 3
+  /** Plain-language name for what this step does. */
   title: string
+  /** The function or layer name an engineer would grep for. */
+  technical: string
   /** Whether this step is real deterministic code or the simulated model. */
   kind: 'deterministic' | 'model'
+  /** Plain-language answer: what did this step conclude. */
   verdict: string
   detail: string
   flags: string[]
@@ -67,6 +77,10 @@ export interface PipelineResult {
   outboundText: string | null
   /** Whether the outbound text may be sent with one tap, or is Dismiss-only. */
   status: DraftStatus
+  /** One plain sentence a non-engineer can read to know what happened. */
+  headline: string
+  /** Who ended up doing the work. Drives the summary chip. */
+  handledBy: 'max' | 'human' | 'nobody'
 }
 
 export interface Reaction {

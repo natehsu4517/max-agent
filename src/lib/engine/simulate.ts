@@ -93,21 +93,38 @@ const STATUS_UPDATE =
   /\b(?:just )?(?:paid|submitted|sent|uploaded|booked it|signed|finished|completed|done with)\b(?![^.?!]*\?)/i
 
 // Simple process questions the assistant may answer in one or two sentences.
+// Each answer is written for its own question: a generic "someone will follow
+// up" pasted onto everything is what makes an assistant feel like a machine.
 const PROCESS_RULES: Array<{ pattern: RegExp; reply: string; reasoning: string }> = [
   {
-    pattern: /\b(?:did you (?:get|receive)|have you (?:got|received)|come through|go through)\b[^?]*\?/i,
-    reply: 'Yes, it came through on our end. Your advisor will take a look and follow up.',
-    reasoning: 'simple document-receipt confirmation, no substantive stakes',
+    pattern: /\b(?:did you (?:get|receive)|have you (?:got|received)|come through|go through|land)\b[^?]*\?/i,
+    reply: 'Yes, that came through on our end. Your account lead will take a look and follow up.',
+    reasoning: 'a receipt confirmation, with nothing substantive riding on it',
   },
   {
-    pattern: /\b(?:office hours|what time.{0,20}(?:open|available)|when are you (?:open|around))\b/i,
+    pattern: /\b(?:office hours|what time.{0,20}(?:open|available)|when are you (?:open|around)|working hours)\b/i,
     reply: 'The team is around weekdays, 9 to 6 Eastern. Anything sent after that gets picked up the next morning.',
-    reasoning: 'office-hours question, purely logistical',
+    reasoning: 'an office-hours question, purely logistical',
   },
   {
     pattern: /\bwhat(?:'s| is| happens)\b[^?]{0,40}\bnext\b[^?]*\?/i,
-    reply: 'Your advisor will walk you through the next step on your upcoming call. Nothing is needed from you before then.',
-    reasoning: 'general process question with no numbers or promises attached',
+    reply: 'Your account lead will walk you through the next step on the upcoming call. Nothing is needed from you before then.',
+    reasoning: 'a general process question with no numbers or dates attached',
+  },
+  {
+    pattern: /\b(?:who(?:'s| is)|which of you)\b[^?]{0,30}\b(?:working on|handling|leading|on this|my (?:account|project))\b/i,
+    reply: 'Avery is your account lead and is closest to this one day to day.',
+    reasoning: 'asking who owns the account, which is a plain fact about the team',
+  },
+  {
+    pattern: /\b(?:where do i|how do i|can i)\b[^?]{0,40}\b(?:find|see|access|get to)\b[^?]{0,30}\b(?:file|doc|deck|notes|link|folder|recording)/i,
+    reply: 'Everything for this project lives in the shared folder linked at the top of this channel.',
+    reasoning: 'pointing at a location the client already has access to',
+  },
+  {
+    pattern: /\bare (?:we|you) (?:still )?(?:on|good) for\b[^?]*\?|\bis (?:our|the) call still\b[^?]*\?/i,
+    reply: 'Yes, that is still on the calendar as scheduled.',
+    reasoning: 'confirming a booking that already exists, no new commitment made',
   },
 ]
 
@@ -171,8 +188,8 @@ export function simulateModel(redactedMessage: string): ReplyDecision {
       return {
         ...base,
         action: 'divert_borderline',
-        replyText: 'Got it, I have let your advisor know. Send those times over whenever you have them.',
-        reasoning: 'mixed message: a transactional ask plus the client handling the next step themselves',
+        replyText: 'Got it, I have let Avery know. Send those times over whenever you have them.',
+        reasoning: 'a mixed message: a transactional ask plus the client handling the next step themselves',
       }
     }
     // A request is clean ONLY when that ask IS the whole message. Counting
