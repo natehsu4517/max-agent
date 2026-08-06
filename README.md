@@ -34,11 +34,14 @@ A rebuild of a system I built and run in production for a client. It is not a co
 deployment: the client, the advisor, the firm, and every message here are invented, and nothing in
 this repo touches real data or real credentials.
 
-**What is the same code I run in production, rule for rule:**
+**What is the production logic:**
 
-- `src/lib/engine/compliance.ts` — the compliance filter and PII redaction, ported verbatim
-- `src/lib/engine/brain.ts` — `preFilterForced` (Layer 0) and `planDispatch` (Layer 2), plus the
-  safe-zone system prompt with only the firm's vocabulary changed
+- `src/lib/engine/compliance.ts` — the compliance filter and PII redaction. The detection
+  strategies are the production ones (context-gated amount matching, hard-versus-soft certainty,
+  banned phrases, collapsed digit runs); the word lists are retargeted to a generic
+  client-services vocabulary for this demo.
+- `src/lib/engine/brain.ts` — `preFilterForced` (Layer 0) and `planDispatch` (Layer 2) unchanged,
+  plus the safe-zone system prompt with the same structure and rule order
 
 **What is simulated:**
 
@@ -58,7 +61,7 @@ template at a client who had just said they would handle the rebooking. The demo
 current decision and what the old classifier would have done.
 
 **When the model misbehaves.** The model ignores its prompt and writes a confident reply quoting a
-dollar figure and promising approval. It wants to send. It never gets to: Layer 2 reads its output,
+price and promising a delivery date. It wants to send. It never gets to: Layer 2 reads its output,
 trips three compliance rules, and renders a card with no send button at all. This is the only
 reason Layer 2 exists, and it is the case worth understanding.
 
@@ -68,6 +71,19 @@ model never runs. Doing nothing is a real outcome, and the cheapest one.
 **A pasted SSN.** Redacted before storage, never shown to the model, and met with deliberate
 silence, because an automated "got it!" is itself the wrong response to a client pasting an SSN
 into a channel.
+
+## What it does inside Slack
+
+Beyond drafting, the behaviours the demo exercises are the ones that make it survivable in a
+channel a client is actually reading:
+
+- **Replies in thread**, not in the main channel, so a shared channel does not fill with bot chatter
+- **Escalation bridges** post internally with an @-mention and a jump link, never in the client
+  channel, and a teammate clears one with a reaction
+- **Labeled links only** (`<url|label>`), because the model is never allowed to emit a URL
+- **A daily scorecard** that tallies what happened, including the decisions to do nothing. Click
+  "Post scorecard" after running a few cases and it counts your session. A zero-activity day still
+  posts, so a broken assistant and a calm one never look the same.
 
 ## Design notes
 

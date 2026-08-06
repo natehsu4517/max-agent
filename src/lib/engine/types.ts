@@ -1,7 +1,7 @@
 /** Shared vocabulary for the decision pipeline. Mirrors the production types. */
 
 export type ReplyAction = 'reply' | 'divert_sensitive' | 'divert_borderline' | 'stay_out'
-export type LinkIntent = 'book' | 'reschedule' | 'cancel' | 'payout'
+export type LinkIntent = 'book' | 'reschedule' | 'cancel' | 'request'
 export type SensitivityCategory = 'problem' | 'money' | 'legal' | 'complaint' | 'pii' | 'commitment'
 
 /** Raw decision from the model layer, before Layer-2 reconciliation. */
@@ -69,6 +69,13 @@ export interface PipelineResult {
   status: DraftStatus
 }
 
+export interface Reaction {
+  emoji: string
+  count: number
+  /** Rendered as "you reacted" styling when a person clicked it in the demo. */
+  mine?: boolean
+}
+
 export interface ChatMessage {
   id: string
   author: string
@@ -78,10 +85,21 @@ export interface ChatMessage {
   at: number
   /** Present when this message is the redacted rendering of a raw paste. */
   wasRedacted?: boolean
+  reactions?: Reaction[]
+  /**
+   * Replies shown under this message as a Slack thread. The assistant answers
+   * in thread rather than in the main channel, so a shared client channel does
+   * not fill with bot chatter.
+   */
+  replies?: ChatMessage[]
 }
+
+/** What kind of thing landed in the internal review channel. */
+export type CardKind = 'draft' | 'escalation' | 'fyi' | 'scorecard'
 
 export interface ReviewCard {
   id: string
+  kind: CardKind
   /** The message that produced this card, always redacted. */
   clientMessage: string
   clientName: string
@@ -94,4 +112,23 @@ export interface ReviewCard {
   /** Whether a human may one-tap Send, or only Dismiss. */
   sendable: boolean
   at: number
+  /** Who the bridge pings, for escalation cards. */
+  mention?: string
+  /** Set once a person marks an escalation handled with a reaction. */
+  acknowledged?: boolean
+  scorecard?: Scorecard
+}
+
+/** The daily digest, tallied from what actually happened. */
+export interface Scorecard {
+  messagesSeen: number
+  answeredAutomatically: number
+  draftsSent: number
+  draftsDismissed: number
+  awaitingReview: number
+  neededAPerson: number
+  piiRedactions: number
+  pingsAvoided: number
+  blockedByCompliance: number
+  saidNothing: number
 }

@@ -10,9 +10,11 @@
  * never echoes, stores, or acts on an SSN / bank / card number a client pasted
  * into the channel.
  *
- * Ported verbatim from the system I built and run in production. Every rule
- * below behaves here exactly as it does there: type your own message into the
- * demo and these are the regexes that judge it.
+ * The detection strategies here are the ones from the system I built and run in
+ * production: context-gated amount matching, hard-versus-soft certainty, banned
+ * phrases, collapsed digit runs. The word lists are retargeted to a generic
+ * client-services vocabulary for this demo. Type your own message and these are
+ * the regexes judging it.
  */
 
 export interface ComplianceCheck {
@@ -24,68 +26,50 @@ const BANNED_PHRASES: Array<{ pattern: RegExp; name: string }> = [
   { pattern: /\bi'd be happy to\b/i, name: 'BANNED_PHRASE:happy_to' },
   { pattern: /\bhappy to help\b/i, name: 'BANNED_PHRASE:happy_to_help' },
   { pattern: /\bas an ai\b/i, name: 'BANNED_PHRASE:as_an_ai' },
+  { pattern: /\bno problem at all\b/i, name: 'BANNED_PHRASE:no_problem' },
   { pattern: /\bguarantee(?:d|s)?\b/i, name: 'COMPLIANCE:guarantee' },
-  { pattern: /\bpassive income\b/i, name: 'COMPLIANCE:passive_income' },
-  { pattern: /\bget rich\b/i, name: 'COMPLIANCE:get_rich' },
 ]
 
 // Specific-amount detection (independent of a literal '$').
-// The assistant is told never to quote a dollar figure to a client, so ANY
-// money-shaped token is a block: "$50,000", "150k", "fifty... thousand".
+// The assistant may never quote a figure to a client, because pricing and
+// scope are a human's job, so ANY money-shaped token is a block: "$4,500",
+// "12k", "about fifteen thousand".
 const AMOUNT_NUMERIC = /\$\s?\d|\b\d[\d,]*(?:\.\d+)?\s?(?:k\b|grand\b|thousand\b|million\b|mil\b|figures\b)/i
 const AMOUNT_SPELLED = /\b(?:thousand|million)\b/i
 // Bare money-shaped figure with no '$' and no k/thousand suffix: a comma-grouped
-// number ("150,000") or a 5+ digit run ("50000"). 5+ digits (not 4) so a plain
-// year like "2026" doesn't trip it. Only counts in an approval context.
+// number ("15,000") or a 5+ digit run ("15000"). 5+ digits (not 4) so a plain
+// year like "2026" doesn't trip it. Only counts in a commercial context.
 const AMOUNT_BARE = /\b\d{1,3}(?:,\d{3})+\b|\b\d{5,}\b/
-// "six figures", "seven figures" and friends are money claims on their own.
+// "six figures" and friends are money claims on their own.
 const AMOUNT_FIGURES = /\b(?:five|six|seven|eight|nine|multiple)[\s-]?figures?\b/i
-// Prefix patterns: leading \b only (no trailing \b) so "approval", "funding",
-// "qualify", "approved", "secured" all match the stems.
-const FUNDING_CTX = /\b(?:approv|fund|qualif|financ|capital|credit line|loan|secur|get you|land)/i
+// Prefix patterns: leading \b only (no trailing \b) so "pricing", "invoiced",
+// "billed", "estimated" all match the stems.
+const COMMERCIAL_CTX = /\b(?:cost|pric|quot|invoic|bill|budget|fee|retainer|charg|estimat|discount|refund|owe|pay)/i
 
 function tripsSpecificAmount(text: string): boolean {
   if (AMOUNT_NUMERIC.test(text)) return true
   if (AMOUNT_FIGURES.test(text)) return true
-  // Bare and spelled-out amounts only count in an approval context
-  // ("150,000 in funding", "fifty thousand") so we don't flag "a thousand
-  // thanks", a year, or an order number.
-  if (AMOUNT_BARE.test(text) && FUNDING_CTX.test(text)) return true
-  return AMOUNT_SPELLED.test(text) && FUNDING_CTX.test(text)
+  // Bare and spelled-out amounts only count in a commercial context ("15,000
+  // for the build", "about fifteen thousand") so we don't flag "a thousand
+  // thanks", a year, or a ticket number.
+  if (AMOUNT_BARE.test(text) && COMMERCIAL_CTX.test(text)) return true
+  return AMOUNT_SPELLED.test(text) && COMMERCIAL_CTX.test(text)
 }
 
-// Approval-certainty: de-facto guarantees without the word "guaranteed".
-// Hard certainty phrases are blocked outright (rarely innocent in client comms);
-// soft ones only when they sit next to an approval stem.
-const CERTAINTY_HARD = /\b(?:a lock|locked in|sure thing|surefire)\b/i
+// Delivery promises: de-facto guarantees without the word "guaranteed".
+// Hard certainty phrases are blocked outright (rarely innocent in client
+// comms); soft ones only when they sit next to a delivery stem.
+const CERTAINTY_HARD = /\b(?:a lock|locked in|sure thing|surefire|you have my word)\b/i
 // No trailing \b: "100%" ends in a non-word char, which a trailing \b would reject.
 const CERTAINTY_SOFT = /\b(?:promise(?:d|s)?|definitely|certainly|for sure|rest assured|100\s?%|no doubt|without a doubt)/i
-const APPROVAL_CTX = /\b(?:approv|qualif|fund|financ|capital|credit line|loan)/i
-const STATES_APPROVED = /\b(?:get|be|you'?re|gonna be|going to be)\s+approved\b/i
+const DELIVERY_CTX = /\b(?:deliver|launch|ship|complet|finish|ready|deadline|timeline|turnaround|approv|sign.?off)/i
+const STATES_DELIVERED =
+  /\b(?:will|we'?ll|gonna|going to)\s+(?:be\s+|have\s+(?:it\s+)?)?(?:done|ready|finished|delivered|live|shipped|wrapped)\b/i
 
-function tripsApprovalCertainty(text: string): boolean {
+function tripsDeliveryPromise(text: string): boolean {
   if (CERTAINTY_HARD.test(text)) return true
-  if (STATES_APPROVED.test(text)) return true
-  return CERTAINTY_SOFT.test(text) && APPROVAL_CTX.test(text)
-}
-
-// "0% interest" must be "0% intro APR".
-// Normalize spacing/wording, then require an "intro" qualifier within a window
-// on EITHER side of the needle. Also catches "zero percent", "no interest",
-// and "interest-free".
-function trips0PctInterest(text: string): boolean {
-  const norm = text
-    .toLowerCase()
-    .replace(/zero\s*percent/g, '0%')
-    .replace(/0\s*%/g, '0%')
-  const needles = ['0% interest', 'no interest', 'interest-free', 'interest free']
-  for (const needle of needles) {
-    const idx = norm.indexOf(needle)
-    if (idx === -1) continue
-    const window = norm.slice(Math.max(0, idx - 30), idx + needle.length + 30)
-    if (!window.includes('intro')) return true
-  }
-  return false
+  if (STATES_DELIVERED.test(text)) return true
+  return CERTAINTY_SOFT.test(text) && DELIVERY_CTX.test(text)
 }
 
 // Typographic dashes by code point: em (0x2014), en (0x2013), figure (0x2012),
@@ -128,9 +112,8 @@ export function checkCompliance(text: string): ComplianceCheck {
 
   if (TYPO_DASH.test(text)) flags.push('TYPO_DASH')
   if (text.length > MAX_CHARS) flags.push(`TOO_LONG:${text.length}`)
-  if (trips0PctInterest(text)) flags.push('COMPLIANCE:0pct_missing_intro')
   if (tripsSpecificAmount(text)) flags.push('COMPLIANCE:specific_amount')
-  if (tripsApprovalCertainty(text)) flags.push('COMPLIANCE:approval_certainty')
+  if (tripsDeliveryPromise(text)) flags.push('COMPLIANCE:delivery_promise')
   if (SENSITIVE_DIGITS.test(joined)) flags.push('COMPLIANCE:sensitive_digits')
 
   for (const { pattern, name } of BANNED_PHRASES) {

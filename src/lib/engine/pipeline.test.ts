@@ -29,10 +29,10 @@ function decision(over: Partial<ReplyDecision>): ReplyDecision {
 // Compliance filter
 
 test('compliance blocks a dollar amount in any shape', () => {
-  assert.equal(checkCompliance('You should see $50,000 land next week.').passed, false)
-  assert.equal(checkCompliance('Expect about 150k once this closes.').passed, false)
-  assert.equal(checkCompliance('That is a six figure approval.').passed, false)
-  assert.equal(checkCompliance('We secured fifty thousand for a client last week.').passed, false)
+  assert.equal(checkCompliance('That extra scope runs $4,500.').passed, false)
+  assert.equal(checkCompliance('The build will cost about 12k.').passed, false)
+  assert.equal(checkCompliance('That is a six figure engagement.').passed, false)
+  assert.equal(checkCompliance('We billed roughly fifteen thousand for that phase.').passed, false)
 })
 
 test('compliance allows a bare number with no money context', () => {
@@ -40,15 +40,16 @@ test('compliance allows a bare number with no money context', () => {
   assert.equal(check.passed, true, `unexpected flags: ${check.flags.join(', ')}`)
 })
 
-test('compliance blocks certainty about approval', () => {
-  assert.equal(checkCompliance('You will definitely get approved.').passed, false)
-  assert.equal(checkCompliance('That approval is a lock.').passed, false)
+test('compliance blocks a promised delivery', () => {
+  assert.equal(checkCompliance("We'll definitely have it delivered by Friday.").passed, false)
+  assert.equal(checkCompliance('That launch date is locked in.').passed, false)
   assert.equal(checkCompliance('I guarantee this works out.').passed, false)
+  assert.equal(checkCompliance('It will be done tomorrow.').passed, false)
 })
 
-test('compliance requires 0% to be intro', () => {
-  assert.equal(checkCompliance('This card is 0% interest.').passed, false)
-  assert.equal(checkCompliance('This card carries a 0% intro APR for 12 months.').passed, true)
+test('compliance allows a plain factual update with no promise', () => {
+  const check = checkCompliance('The design review notes are in the shared folder now.')
+  assert.equal(check.passed, true, `unexpected flags: ${check.flags.join(', ')}`)
 })
 
 test('compliance catches banned assistant tells', () => {
@@ -106,11 +107,12 @@ test('layer 0 overrides a model that wanted to reply', () => {
 })
 
 test('generated prose that trips compliance is downgraded, never sent', () => {
-  const plan = planDispatch(decision({ action: 'reply', replyText: 'You will definitely get approved.' }), null)
+  const text = "We'll definitely have it delivered by Friday."
+  const plan = planDispatch(decision({ action: 'reply', replyText: text }), null)
   assert.equal(plan.action, 'divert_borderline')
   assert.ok(plan.flags.includes('AUTO_BLOCKED'))
-  assert.ok(plan.flags.includes('COMPLIANCE:approval_certainty'))
-  assert.equal(plan.replyText, 'You will definitely get approved.')
+  assert.ok(plan.flags.includes('COMPLIANCE:delivery_promise'))
+  assert.equal(plan.replyText, text)
 })
 
 test('a hallucinated link is downgraded', () => {
@@ -190,17 +192,24 @@ test('a pasted SSN is redacted, silent, and never echoed', () => {
   assert.equal(result.status, 'awaiting_human')
 })
 
-test('asking for a guarantee is diverted, not answered', () => {
-  const result = runPipeline('Will I definitely get approved if I apply?', OPTS)
+test('asking for a commitment is diverted, not answered', () => {
+  const result = runPipeline('Can you promise the checkout work will be done by Friday?', OPTS)
   assert.equal(result.plan.action, 'divert_sensitive')
   assert.equal(result.plan.sensitivityCategory, 'commitment')
   assert.notEqual(result.status, 'auto_sent')
 })
 
 test('a reported problem always goes to a human', () => {
-  const result = runPipeline('I got denied again on the second application', OPTS)
+  const result = runPipeline('Staging is throwing a 500 on the payment step, nothing is going through', OPTS)
   assert.equal(result.plan.action, 'divert_sensitive')
   assert.equal(result.plan.sensitivityCategory, 'problem')
+})
+
+test('a pricing question is diverted as money, never answered with a figure', () => {
+  const result = runPipeline('How much is the extra checkout work going to cost?', OPTS)
+  assert.equal(result.plan.action, 'divert_sensitive')
+  assert.equal(result.plan.sensitivityCategory, 'money')
+  assert.notEqual(result.status, 'auto_sent')
 })
 
 test('a bare thanks does nothing at all', () => {
@@ -267,7 +276,7 @@ test('a pending card always has text to send', () => {
 })
 
 test('the hand-off ack passes the outbound compliance gate like any other message', () => {
-  const result = runPipeline('I got denied again on the second application', OPTS)
+  const result = runPipeline('Staging is throwing a 500 on the payment step', OPTS)
   assert.equal(result.status, 'awaiting_human')
   assert.ok(result.outboundText)
   assert.equal(checkCompliance(result.outboundText!).passed, true)

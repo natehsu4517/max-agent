@@ -29,26 +29,26 @@ const SENSITIVE_RULES: Array<{
   {
     category: 'commitment',
     pattern:
-      /\b(?:will i|do i|am i|are we)\b[^.?!]*\b(?:get|be|qualify|approved|approval)\b|\bguarantee|\bapproval odds\b|\bwhat are my odds\b|\bhow long until\b|\bwhen will i (?:get|be|see)\b|\bshould i\b/i,
-    reasoning: 'client is asking for a commitment or an outcome the assistant cannot promise',
+      /\bguarantee|\bcan you promise\b|\bhow long until\b|\bwhen will (?:it|this|we|you)\b|\bwill (?:it|this|we|you)\b[^.?!]{0,40}\b(?:be )?(?:done|ready|finished|live|ship|launch|deliver)\b|\bby (?:friday|monday|tuesday|wednesday|thursday|next week|end of)\b[^.?!]{0,20}\?|\bshould (?:i|we)\b/i,
+    reasoning: 'the client is asking for a commitment on timing or outcome that the assistant cannot make',
   },
   {
     category: 'complaint',
     pattern:
-      /\b(?:refund|cancel (?:my|the) (?:service|contract|account|membership)|want my money back|this is (?:ridiculous|unacceptable|a joke)|waste of (?:time|money)|not happy|unhappy|disappointed|done with this|quit)\b/i,
-    reasoning: 'client is expressing dissatisfaction or threatening to leave',
+      /\b(?:refund|cancel (?:my|the|our) (?:contract|account|retainer|subscription|engagement)|want my money back|this is (?:ridiculous|unacceptable|a joke)|waste of (?:time|money)|not happy|unhappy|disappointed|frustrated|done with this|looking at other)\b/i,
+    reasoning: 'the client is expressing dissatisfaction or threatening to leave',
   },
   {
     category: 'money',
     pattern:
-      /\b(?:how much|what.{0,12}rate|interest rate|the terms|my balance|apr|payment amount|what does .{0,20}number mean|fees?)\b|\$\s?\d/i,
-    reasoning: 'client is asking about money or account mechanics',
+      /\b(?:how much|what.{0,12}(?:cost|rate|price)|the invoice|my invoice|our invoice|billing|the retainer|scope creep|out of scope|extra charge|what does .{0,20}number mean|fees?)\b|\$\s?\d/i,
+    reasoning: 'the client is asking about pricing, billing or scope',
   },
   {
     category: 'problem',
     pattern:
-      /\b(?:denied|declined|rejected|stuck|blocked|broken|not work|isn.t work|won.t (?:let|load|submit|open)|can.t (?:submit|log ?in|access|upload)|error|failed|issue with|problem with|something (?:hit|happened)|went wrong)\b/i,
-    reasoning: 'client reported a problem or blocker, which always goes to a human',
+      /\b(?:down|broken|not work|isn'?t work|won'?t (?:let|load|submit|open|save|go)|can'?t (?:submit|log ?in|access|upload|see|find)|error|erroring|throwing|failing|failed|fails|bug|crash|crashing|timing out|timed out|timeout|stuck|blocked|issue with|problem with|something (?:is )?(?:wrong|off|broken)|went wrong|nothing (?:is )?(?:going|coming) through|stopped working|no longer work)\b|\b(?:404|500|502|503)\b/i,
+    reasoning: 'the client reported a problem or blocker, which always goes to a person',
   },
 ]
 
@@ -57,7 +57,7 @@ const TRANSACTIONAL: Array<{ intent: LinkIntent; pattern: RegExp }> = [
   { intent: 'reschedule', pattern: /\b(?:reschedule|move|push|change)\b[^.?!]{0,40}\b(?:call|meeting|appointment|time)\b|\breschedule\b/i },
   { intent: 'cancel', pattern: /\bcancel\b[^.?!]{0,40}\b(?:call|meeting|appointment|tomorrow|today)\b|\bcancel (?:my|the|our) (?:call|meeting|appointment)\b/i },
   { intent: 'book', pattern: /\b(?:book|schedule|set up|get on)\b[^.?!]{0,40}\b(?:call|meeting|time|calendar)\b|\bcalendar link\b|\bwhen (?:can|could) (?:we|i) (?:talk|meet|chat)\b/i },
-  { intent: 'payout', pattern: /\b(?:payout|withdrawal|request)\s+(?:request\s+)?form\b|\bhow do i (?:request|submit) (?:a )?payout\b|\bpayout link\b/i },
+  { intent: 'request', pattern: /\b(?:request|intake|project|change)\s+(?:request\s+)?form\b|\bhow do i (?:submit|file|put in) (?:a )?(?:request|ticket)\b|\brequest form link\b/i },
 ]
 
 // The client says they will handle the next step themselves. This is what makes
@@ -236,5 +236,5 @@ export function legacyClassify(message: string): LinkIntent | 'gratitude' | 'upd
 /** What the legacy classifier would have DONE with that single word. */
 export function legacyWouldAutoSend(message: string): boolean {
   const label = legacyClassify(message)
-  return label === 'book' || label === 'reschedule' || label === 'cancel' || label === 'payout'
+  return label === 'book' || label === 'reschedule' || label === 'cancel' || label === 'request'
 }

@@ -22,6 +22,10 @@
   --color-signal-live: #1a7f4b;
   --color-signal-hold: #9a6b12;
   --color-signal-block: #a63a2c;
+
+  /* Chat surfaces read as a real client, so links get a link colour rather
+     than the page's monochrome treatment. */
+  --color-link: #1264a3;
 }
 
 /* `inline` is required here, not optional: these values point at variables

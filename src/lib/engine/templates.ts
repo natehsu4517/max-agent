@@ -15,7 +15,7 @@ import type { LinkIntent } from './types'
 
 /** Demo URLs. Nothing here resolves to a real booking system. */
 export const BOOKING_URL = 'https://example.com/book/check-in'
-export const REQUEST_FORM_URL = 'https://example.com/forms/payout-request'
+export const REQUEST_FORM_URL = 'https://example.com/forms/project-request'
 
 function name(first: string | null | undefined): string {
   return first?.trim() || 'there'
@@ -56,10 +56,10 @@ export function cancelReply(first: string, advisorMention: string): string {
   )
 }
 
-export function payoutReply(first: string): string {
+export function requestReply(first: string): string {
   return (
-    `Here is the ${linkTo(REQUEST_FORM_URL, 'payout request form')}, ${name(first)}. ` +
-    `Please submit one form for each account, and the team will take it from there.`
+    `Here is the ${linkTo(REQUEST_FORM_URL, 'project request form')}, ${name(first)}. ` +
+    `Please file one per request so it lands in the right queue, and the team will pick it up from there.`
   )
 }
 
@@ -71,10 +71,10 @@ export function afterHoursAck(first: string): string {
 }
 
 export function handoffAck(first: string): string {
-  return `Thanks ${name(first)}, I have passed this to your advisor and someone will follow up shortly.`
+  return `Thanks ${name(first)}, I have passed this to your account lead and someone will follow up shortly.`
 }
 
-/** Dispatcher for the transactional intents. 'payout' has no advisor params. */
+/** Dispatcher for the transactional intents. 'request' has no advisor params. */
 export function renderTransactional(
   intent: LinkIntent,
   first: string,
@@ -89,7 +89,7 @@ export function renderTransactional(
       return rescheduleReply(first, slots)
     case 'cancel':
       return cancelReply(first, advisorMention)
-    case 'payout':
-      return payoutReply(first)
+    case 'request':
+      return requestReply(first)
   }
 }
