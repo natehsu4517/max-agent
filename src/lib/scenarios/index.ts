@@ -53,7 +53,7 @@ export const CHANNEL_HISTORY = [
     id: 'h1',
     author: ADVISOR.fullName,
     authorRole: 'human' as const,
-    text: `Morning ${CLIENT.firstName} — the new checkout flow is on staging for you to look at. Our check-in call is tomorrow at 2.`,
+    text: `Morning ${CLIENT.firstName}, the new checkout flow is on staging for you to look at. Our check-in call is tomorrow at 2.`,
     at: -37,
   },
   {

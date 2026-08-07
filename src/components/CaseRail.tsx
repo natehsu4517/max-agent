@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Scenario, ScenarioGroup } from "@/lib/scenarios";
 
 /**
@@ -26,6 +26,14 @@ export function CaseRail({
   const groupOfActive = groups.find((g) => g.scenarios.some((s) => s.id === activeId))?.id;
   const [opened, setOpened] = useState<string | null>(null);
   const open = opened ?? groupOfActive ?? groups[0].id;
+
+  // The page opens on a case in the LAST group, so without this the selected
+  // row renders half-clipped behind the footer: the one row that has to look
+  // deliberate is the one that looks broken.
+  const selectedRow = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    selectedRow.current?.scrollIntoView({ block: "nearest" });
+  }, [activeId, open]);
 
   return (
     <div className="flex min-h-0 flex-col overflow-hidden rounded-[6px] border border-border-light bg-surface-elevated">
@@ -70,6 +78,7 @@ export function CaseRail({
                       return (
                         <li key={s.id}>
                           <button
+                            ref={on ? selectedRow : undefined}
                             onClick={() => onPick(s)}
                             aria-current={on ? "true" : undefined}
                             className={`block w-full border-l-2 px-4 py-1.5 text-left font-body text-[13px] leading-snug transition-colors ${

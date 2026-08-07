@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import type { ReviewCard, Scorecard } from "@/lib/engine/types";
 import { renderMrkdwn } from "./mrkdwn";
 
@@ -116,6 +117,15 @@ export function ReviewPane({
   onAcknowledge: (id: string) => void;
   onPostScorecard: () => void;
 }) {
+  // Follow the newest card, exactly as the client channel follows its newest
+  // message. Without this the payoff of the case the page opens on, a draft
+  // rendered with no send control at all, sits below this pane's fold.
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [cards]);
+
   return (
     <section
       aria-labelledby="review-heading"
@@ -138,7 +148,7 @@ export function ReviewPane({
         </button>
       </header>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3" aria-live="polite">
+      <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto px-4 py-3" aria-live="polite">
         {cards.length === 0 && (
           <p className="px-1 py-4 font-sans text-[13.5px] leading-relaxed text-text-muted">
             Nothing waiting. Drafts, escalations and the daily digest land here, where a person sees
