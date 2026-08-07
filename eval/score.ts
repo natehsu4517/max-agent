@@ -12,7 +12,10 @@ import { join } from 'node:path'
 import { runPipeline } from '@/lib/engine/pipeline'
 import type { PipelineResult } from '@/lib/engine/types'
 
-const DIR = join(process.cwd(), 'eval', 'corpus')
+// CORPUS=corpus3 scores the held-out set. Run 1 and 2's corpus stays put so
+// both remain reproducible.
+const CORPUS = process.env.CORPUS || 'corpus'
+const DIR = join(process.cwd(), 'eval', CORPUS)
 const OPTS = { clientFirstName: 'Dana', advisorName: 'Avery', advisorMention: '<@U0000000001>' }
 
 type Lane = 'A' | 'B' | 'C' | 'D'
@@ -245,7 +248,7 @@ for (const [i, e] of [...byIntent].sort((a, b) => b[1].n - a[1].n)) {
 }
 
 writeFileSync(
-  join(DIR, '..', 'results.json'),
+  join(DIR, '..', `results-${CORPUS}.json`),
   JSON.stringify({ n, contested, rows, contestedRows }, null, 1)
 )
-console.log(`\nwrote eval/results.json (${rows.length} scored rows)`)
+console.log(`\nwrote eval/results-${CORPUS}.json (${rows.length} scored rows)`)

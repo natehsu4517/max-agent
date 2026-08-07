@@ -233,3 +233,100 @@ the second decimal place.
 - 87 noise escalations: nothing needed doing, somebody got pinged anyway.
 - 113 over-silences, still resting on the one debatable policy line about holding
   notes.
+
+---
+
+# Results, run 3 — the held-out corpus
+
+402 new messages, same six briefs, same policy, same scoring. Written six weeks
+later in the same relationship (post-launch: returns flows, Black Friday prep,
+loyalty, dashboards) so the vocabulary differs naturally rather than paraphrasing
+messages the engine was tuned against.
+
+Overlap with corpus 1: **4 of 402** near-identical (short acknowledgements), median
+nearest-neighbour similarity 0.21.
+
+Reproduce with `CORPUS=corpus3 npx tsx eval/score.ts`.
+
+## The control that makes this readable
+
+Corpus 3 was deliberately written harder, so a worse score could just mean a harder
+test. The old engine was therefore scored on it too, from its own commit in a
+separate worktree. That gives a clean 2x2.
+
+**Unnecessary escalation rate:**
+
+| | corpus 1 (tuned against) | corpus 3 (held out) |
+|---|---|---|
+| **engine before the fix** | 95.9% | **98.6%** |
+| **engine after the fix** | 42.1% | **81.1%** |
+
+Read it this way:
+
+- Corpus 3 *is* slightly harder. The old engine scores 2.7 points worse on it.
+- The gain that **generalises** is 98.6% → 81.1%, or **17.5 points**.
+- The gain measured on the corpus I could see was 53.8 points.
+
+**Roughly a third of the improvement was real. Two thirds was fitting to the test
+set.** That is the number this whole exercise exists to produce, and it is only
+visible because the corpus was held out and the old engine was re-run as a control.
+
+By intent, held out, before → after:
+
+```
+book      1/70 -> 15/70    1% -> 21%     (on the tuned corpus: 65%)
+move      0/36 ->  5/36    0% -> 14%     (on the tuned corpus: 54%)
+cancel    1/26 ->  7/26    4% -> 27%     (on the tuned corpus: 64%)
+process   0/8  ->  0/8
+resource  0/4  ->  0/4
+```
+
+## What generalised, and what did not
+
+**Generalised.** The structural changes held up:
+
+- **Lane B works on messages nobody tuned for.** 10 held-out messages were correctly
+  acted on *and* escalated. That was structurally impossible before. `cancel thurs`,
+  `not gonna make it sorry`, and a message asking to close out an invoice question
+  while booking time all landed right.
+- **Silence discipline held.** 14/14 legal and PII messages produced silence plus a
+  person. Zero broken silence, both engines, both corpora.
+- **Dropped messages fell 2 → 1.**
+
+**Did not generalise.** The cue lists. `book` recognises 65% of the phrasings I
+looked at and 21% of the ones I did not. That gap is the overfitting, stated plainly.
+
+## Two defects the held-out set found
+
+Left unfixed on purpose. The commitment made before run 3 was that whatever it said
+would be reported and the engine would not be touched afterwards, because fixing
+against a test set is how the test set stops being one. Fixing these burns corpus 3
+the same way corpus 1 was burned.
+
+1. **A dropped payment discrepancy.** `priya sent me a list of 11 orders from the
+   last 4 days where the analytics total and the actual paid amount dont match. i'll
+   paste it in a sec` → `stay_out`, nobody told. The substantive-word list has
+   `doesn't` and `didn't` but not `don't`, and no term for a mismatch. Same class as
+   the run-1 drops, one word away from being caught.
+2. **A new unsafe auto-send, a regression.** `can someone on your side get on a call
+   with her directly. im a bad relay for this stuff` → auto-sent a booking link. The
+   `get on a call` cue fired; the third-party guard wants "call with our/my/their/the
+   X" and this said "with her". The old engine had zero unsafe auto-sends on this
+   corpus, so widening recognition caused this one.
+
+Both are single messages out of 402. Both are real.
+
+## Also worth noting
+
+Inter-rater agreement fell 97.5% → 94.8%, and contested messages rose 10 → 21. The
+harder, more elliptical corpus is genuinely more ambiguous, which is consistent with
+the brief and is another sign the two corpora are not the same test.
+
+## The honest summary
+
+The engine got meaningfully better: **98.6% → 81.1%** unnecessary escalation on
+messages it had never seen, plus a lane that did not previously exist and a class of
+silently discarded messages nearly eliminated.
+
+It did not get as much better as run 2 claimed, and now there is a number for the
+difference instead of a caveat.
