@@ -1,0 +1,704 @@
+{
+  "labels": [
+    {
+      "id": "commercial-1",
+      "lane": "C",
+      "intents": ["money"],
+      "confidence": "high",
+      "note": "Fee structure question is pricing/contract value, which the catalogue puts in lane C; Max may never state a figure."
+    },
+    {
+      "id": "sched-mixed-2",
+      "lane": "B",
+      "intents": ["money", "book"],
+      "confidence": "high",
+      "note": "Invoice line dispute is lane C money; the co-occurring booking ask is promoted to B under the multi-intent rule."
+    },
+    {
+      "id": "noise-2",
+      "lane": "A",
+      "intents": ["social"],
+      "confidence": "high",
+      "note": "Pure thanks. React, do not compose a reply; a reply here is counted as noise."
+    },
+    {
+      "id": "commercial-3",
+      "lane": "A",
+      "intents": ["process"],
+      "confidence": "medium",
+      "note": "Routing question with a documented non-committal answer; the money topic is nearby but the intent is process."
+    },
+    {
+      "id": "sched-mixed-4",
+      "lane": "B",
+      "intents": ["problem", "book"],
+      "confidence": "high",
+      "note": "Live blocker at the shipping step is lane C problem, so the booking ask is acted on at lane B with immediate notice."
+    },
+    {
+      "id": "noise-4",
+      "lane": "A",
+      "intents": ["social"],
+      "confidence": "high",
+      "note": "Acknowledgement only; reaction is the action, no further work implied."
+    },
+    {
+      "id": "commercial-5",
+      "lane": "C",
+      "intents": ["commitment"],
+      "confidence": "high",
+      "note": "Asks Max to confirm a delivery date; commitments are lane C and Max may never make one."
+    },
+    {
+      "id": "sched-mixed-6",
+      "lane": "C",
+      "intents": ["problem"],
+      "confidence": "medium",
+      "note": "Rounding defect is a live problem; the time ask is conditional on it not resolving, so the hypothetical rule strips the book intent."
+    },
+    {
+      "id": "noise-6",
+      "lane": "A",
+      "intents": ["social"],
+      "confidence": "high",
+      "note": "Thanks plus closure signal; react only."
+    },
+    {
+      "id": "commercial-7",
+      "lane": "C",
+      "intents": ["commitment"],
+      "confidence": "high",
+      "note": "Explicit request for a guarantee against a date; lane C by catalogue and by principle 2."
+    },
+    {
+      "id": "sched-mixed-8",
+      "lane": "B",
+      "intents": ["complaint", "book"],
+      "confidence": "high",
+      "note": "Scheduling driven by dissatisfaction with repeated design rounds; book it and flag hard, per the lane B entry."
+    },
+    {
+      "id": "noise-8",
+      "lane": "A",
+      "intents": ["social"],
+      "confidence": "high",
+      "note": "Pleasantry with no ask; reaction only."
+    },
+    {
+      "id": "commercial-9",
+      "lane": "C",
+      "intents": ["money"],
+      "confidence": "high",
+      "note": "Whether revisions are billable is a billing/scope-of-fee question, lane C."
+    },
+    {
+      "id": "sched-mixed-10",
+      "lane": "B",
+      "intents": ["problem", "book"],
+      "confidence": "high",
+      "note": "Dictated punctuation hides a live checkout error plus a time ask; problem is C so the booking is promoted to B."
+    },
+    {
+      "id": "noise-10",
+      "lane": "A",
+      "intents": ["social"],
+      "confidence": "high",
+      "note": "Bare acknowledgement; react, do not reply."
+    },
+    {
+      "id": "commercial-11",
+      "lane": "B",
+      "intents": ["complaint", "book"],
+      "confidence": "medium",
+      "note": "Pausing the engagement is a churn signal, and the request to talk is scheduling driven by dissatisfaction: book and flag hard."
+    },
+    {
+      "id": "sched-mixed-12",
+      "lane": "B",
+      "intents": ["book", "commitment"],
+      "confidence": "high",
+      "note": "Launch scope versus fast follow is a commitment question in lane C; the booking ask rides up to lane B."
+    },
+    {
+      "id": "noise-12",
+      "lane": "A",
+      "intents": ["social"],
+      "confidence": "high",
+      "note": "Confirming an already-booked slot and attendees; no new scheduling action, acknowledgement only."
+    },
+    {
+      "id": "commercial-13",
+      "lane": "D",
+      "intents": ["legal", "resource"],
+      "confidence": "high",
+      "note": "Counsel is requesting contract documents; lane D overrides even the otherwise safe document pull, and the client hears nothing."
+    },
+    {
+      "id": "sched-mixed-14",
+      "lane": "A",
+      "intents": ["move"],
+      "confidence": "high",
+      "note": "Status update carries no intent; the standing time change is a plain reschedule and their warehouse calls are not our problem."
+    },
+    {
+      "id": "noise-14",
+      "lane": "A",
+      "intents": ["social"],
+      "confidence": "medium",
+      "note": "Receipt confirmation with no ask Max must answer factually; acknowledgement class, react only."
+    },
+    {
+      "id": "commercial-15",
+      "lane": "C",
+      "intents": ["commitment"],
+      "confidence": "high",
+      "note": "Terse ask for a delivery date; commitment is lane C regardless of brevity."
+    },
+    {
+      "id": "sched-mixed-16",
+      "lane": "B",
+      "intents": ["problem", "book"],
+      "confidence": "medium",
+      "note": "Staging outage is reported as an incident, not stated as resolved, so it stays a lane C problem and promotes the call ask to B."
+    },
+    {
+      "id": "noise-16",
+      "lane": "A",
+      "intents": ["social"],
+      "confidence": "medium",
+      "note": "Availability heads-up with a named backup; no meeting is named so no cancel intent may be inferred."
+    },
+    {
+      "id": "commercial-17",
+      "lane": "C",
+      "intents": ["money"],
+      "confidence": "high",
+      "note": "Invoice breakdown by phase is billing; Max cannot compose figures, so hand over."
+    },
+    {
+      "id": "sched-mixed-18",
+      "lane": "B",
+      "intents": ["book", "problem", "commitment"],
+      "confidence": "high",
+      "note": "Manual refund workaround is a live problem and the when-can-we-stop is a timeline ask; booking acted at B with immediate notice."
+    },
+    {
+      "id": "noise-18",
+      "lane": "A",
+      "intents": ["social"],
+      "confidence": "medium",
+      "note": "Informational FYI that removes urgency; nothing actionable, acknowledgement only."
+    },
+    {
+      "id": "commercial-19",
+      "lane": "C",
+      "intents": ["money", "commitment"],
+      "confidence": "high",
+      "note": "Staffing cut to reduce burn changes contract value and scope; both are lane C."
+    },
+    {
+      "id": "sched-mixed-20",
+      "lane": "B",
+      "intents": ["book", "problem"],
+      "confidence": "medium",
+      "note": "The bug list is live and unresolved, so a lane C problem sits alongside the booking; act on the booking at lane B."
+    },
+    {
+      "id": "noise-20",
+      "lane": "A",
+      "intents": ["social"],
+      "confidence": "medium",
+      "note": "Invoice is mentioned but nothing is asked or disputed; topic adjacency does not create a money intent."
+    },
+    {
+      "id": "commercial-21",
+      "lane": "C",
+      "intents": ["money"],
+      "confidence": "high",
+      "note": "Discount request against prepayment; pricing is lane C and Max may never quote."
+    },
+    {
+      "id": "sched-mixed-22",
+      "lane": "B",
+      "intents": ["money", "book"],
+      "confidence": "high",
+      "note": "Disputed hours on an invoice is lane C money; the co-occurring 30 minute ask is promoted to lane B."
+    },
+    {
+      "id": "noise-22",
+      "lane": "A",
+      "intents": ["process"],
+      "confidence": "high",
+      "note": "How-do-I question with a documented, non-committal answer; act silently."
+    },
+    {
+      "id": "commercial-23",
+      "lane": "D",
+      "intents": ["legal"],
+      "confidence": "high",
+      "note": "Liability allocation under the contract; lane D, hand over silently even though the scenario is framed hypothetically."
+    },
+    {
+      "id": "sched-mixed-24",
+      "lane": "A",
+      "intents": ["book"],
+      "confidence": "medium",
+      "note": "Plain time request; open design questions are questions, not something broken, so no lane C intent is present."
+    },
+    {
+      "id": "noise-24",
+      "lane": "A",
+      "intents": ["resource"],
+      "confidence": "high",
+      "note": "Asking for a link they already have access to; send it silently."
+    },
+    {
+      "id": "commercial-25",
+      "lane": "C",
+      "intents": ["money", "commitment"],
+      "confidence": "high",
+      "note": "Phase placement conflicts with the invoice; both billing and scope are lane C."
+    },
+    {
+      "id": "sched-mixed-26",
+      "lane": "B",
+      "intents": ["book", "complaint", "commitment"],
+      "confidence": "high",
+      "note": "Delay has damaged their plan and they need a new timeline; scheduling driven by dissatisfaction, so book and flag hard."
+    },
+    {
+      "id": "noise-26",
+      "lane": "A",
+      "intents": ["process"],
+      "confidence": "high",
+      "note": "Routing question with a documented answer; lane A."
+    },
+    {
+      "id": "commercial-27",
+      "lane": "C",
+      "intents": ["complaint", "money"],
+      "confidence": "high",
+      "note": "Spend to date versus nothing demoable is dissatisfaction plus contract value; lane C, and Max must not attempt to justify it."
+    },
+    {
+      "id": "sched-mixed-28",
+      "lane": "B",
+      "intents": ["move", "problem"],
+      "confidence": "high",
+      "note": "Reschedule is lane A alone, but the live double-counting defect is lane C, promoting the reschedule to lane B."
+    },
+    {
+      "id": "noise-28",
+      "lane": "A",
+      "intents": ["process"],
+      "confidence": "high",
+      "note": "How to deliver assets is a documented process question; act silently."
+    },
+    {
+      "id": "commercial-29",
+      "lane": "C",
+      "intents": ["complaint"],
+      "confidence": "high",
+      "note": "Bare dissatisfaction signal; lane C, and a person owns the response no matter how short the message is."
+    },
+    {
+      "id": "sched-mixed-30",
+      "lane": "B",
+      "intents": ["book", "commitment"],
+      "confidence": "medium",
+      "note": "Untested checkout against the launch date raises a scope and ownership commitment; book the call at lane B and notify."
+    },
+    {
+      "id": "noise-30",
+      "lane": "A",
+      "intents": ["social"],
+      "confidence": "medium",
+      "note": "Shares their own notes with no ask attached; acknowledgement only."
+    },
+    {
+      "id": "commercial-31",
+      "lane": "C",
+      "intents": ["commitment", "complaint"],
+      "confidence": "medium",
+      "note": "Formal recap of a missed commitment demanding a new date and an owner; escalation language, but no lawyer or liability, so C not D."
+    },
+    {
+      "id": "sched-mixed-32",
+      "lane": "B",
+      "intents": ["book", "problem", "money", "commitment"],
+      "confidence": "high",
+      "note": "Agenda bundles bugs, a buried invoice question and a date confidence check; all lane C, so the hold is acted on at lane B."
+    },
+    {
+      "id": "noise-32",
+      "lane": "A",
+      "intents": ["social"],
+      "confidence": "high",
+      "note": "Greeting; react, do not reply."
+    },
+    {
+      "id": "commercial-33",
+      "lane": "C",
+      "intents": ["money"],
+      "confidence": "high",
+      "note": "Overage rate is a price; Max may never state a figure."
+    },
+    {
+      "id": "sched-mixed-34",
+      "lane": "B",
+      "intents": ["move", "money"],
+      "confidence": "high",
+      "note": "Slot is shifted, not dropped, so this is a reschedule; the Q4 budget review is lane C money and promotes it to B."
+    },
+    {
+      "id": "noise-34",
+      "lane": "A",
+      "intents": ["social"],
+      "confidence": "high",
+      "note": "Pleasantry with no ask; reaction only."
+    },
+    {
+      "id": "commercial-35",
+      "lane": "C",
+      "intents": ["money"],
+      "confidence": "high",
+      "note": "Possible duplicate invoice and duplicate payment; billing, and Max cannot verify or confirm the fact requested."
+    },
+    {
+      "id": "sched-mixed-36",
+      "lane": "B",
+      "intents": ["problem", "book"],
+      "confidence": "medium",
+      "note": "Exposed card display is a live problem Max must not diagnose; the message describes card data but does not contain any, so lane D pii does not fire."
+    },
+    {
+      "id": "noise-36",
+      "lane": "A",
+      "intents": ["social"],
+      "confidence": "high",
+      "note": "Explicit no-ask praise; react, do not compose a reply."
+    },
+    {
+      "id": "commercial-37",
+      "lane": "C",
+      "intents": ["money"],
+      "confidence": "high",
+      "note": "Credit request against a billed sprint is refund territory; the outage itself is past and not the live intent."
+    },
+    {
+      "id": "sched-mixed-38",
+      "lane": "A",
+      "intents": ["book"],
+      "confidence": "high",
+      "note": "Clean, unambiguous ask for time; send the link silently, since silence would itself be an error."
+    },
+    {
+      "id": "noise-38",
+      "lane": "A",
+      "intents": ["social"],
+      "confidence": "high",
+      "note": "Banter; reaction only."
+    },
+    {
+      "id": "commercial-39",
+      "lane": "D",
+      "intents": ["legal", "money"],
+      "confidence": "high",
+      "note": "Payment withheld on legal team instruction over disputed lines; lane D, no client-facing text at all."
+    },
+    {
+      "id": "sched-mixed-40",
+      "lane": "B",
+      "intents": ["cancel", "money"],
+      "confidence": "high",
+      "note": "Cancel is lane B by policy; the buried invoice question is lane C money, and their own fulfillment outage is not our system."
+    },
+    {
+      "id": "noise-40",
+      "lane": "A",
+      "intents": ["social"],
+      "confidence": "high",
+      "note": "Apology for latency, no ask; react only."
+    },
+    {
+      "id": "commercial-41",
+      "lane": "C",
+      "intents": ["commitment"],
+      "confidence": "high",
+      "note": "Asks whether the date slips; a delivery date answer is a commitment Max may not make."
+    },
+    {
+      "id": "sched-mixed-42",
+      "lane": "B",
+      "intents": ["cancel"],
+      "confidence": "high",
+      "note": "Skipping one occurrence is a cancellation; act, offer rebooking, and post it internally as a health signal. Negation scopes to this week only."
+    },
+    {
+      "id": "noise-42",
+      "lane": "A",
+      "intents": ["none"],
+      "confidence": "high",
+      "note": "Self-retracted message; nothing to act on and nobody to notify."
+    },
+    {
+      "id": "commercial-43",
+      "lane": "C",
+      "intents": ["money", "commitment"],
+      "confidence": "high",
+      "note": "Possible scope reduction driven by budget above them; contract value and scope are both lane C."
+    },
+    {
+      "id": "sched-mixed-44",
+      "lane": "B",
+      "intents": ["complaint", "book"],
+      "confidence": "high",
+      "note": "Repeated slips and a demand to restructure the meeting is scheduling driven by dissatisfaction; book it and flag hard."
+    },
+    {
+      "id": "noise-44",
+      "lane": "A",
+      "intents": ["none"],
+      "confidence": "medium",
+      "note": "Truncated fragment naming a topic with no expressed intent; a topic alone is not an intent, so nothing fires."
+    },
+    {
+      "id": "commercial-45",
+      "lane": "C",
+      "intents": ["money"],
+      "confidence": "high",
+      "note": "Deposit application against invoices is billing; Max cannot assert this fact."
+    },
+    {
+      "id": "sched-mixed-46",
+      "lane": "D",
+      "intents": ["legal", "book", "commitment"],
+      "confidence": "high",
+      "note": "Legal team reviewing terms wording makes the whole message lane D; the clean booking ask is suppressed until a person handles it."
+    },
+    {
+      "id": "noise-46",
+      "lane": "A",
+      "intents": ["none"],
+      "confidence": "medium",
+      "note": "Cut-off sentence with no determinable ask; nothing to act on."
+    },
+    {
+      "id": "commercial-47",
+      "lane": "C",
+      "intents": ["money"],
+      "confidence": "high",
+      "note": "Cost to add scope, even a rough number, is a figure Max may never state."
+    },
+    {
+      "id": "sched-mixed-48",
+      "lane": "B",
+      "intents": ["problem", "book"],
+      "confidence": "medium",
+      "note": "Staging URL was shared outside the account, which is an exposure Max must not adjudicate; the booking ask rides up to lane B."
+    },
+    {
+      "id": "noise-48",
+      "lane": "D",
+      "intents": ["pii"],
+      "confidence": "low",
+      "note": "Contains a personal identifier, so silence beats helpfulness, but an employer-issued ID is not on the enumerated pii list."
+    },
+    {
+      "id": "commercial-49",
+      "lane": "C",
+      "intents": ["complaint", "commitment"],
+      "confidence": "high",
+      "note": "Explicit churn signal tied to a date; the bigger conversation is conditional, so it carries no booking intent."
+    },
+    {
+      "id": "sched-mixed-50",
+      "lane": "B",
+      "intents": ["cancel", "money"],
+      "confidence": "high",
+      "note": "Cancel is lane B and must be posted internally; the budget freeze on new work is lane C money riding along."
+    },
+    {
+      "id": "noise-50",
+      "lane": "D",
+      "intents": ["pii", "process"],
+      "confidence": "high",
+      "note": "Full card number present, so lane D overrides everything including the ownership question; redact internally, say nothing."
+    },
+    {
+      "id": "commercial-51",
+      "lane": "C",
+      "intents": ["complaint", "money"],
+      "confidence": "high",
+      "note": "Staffing grievance framed against what they pay for; dissatisfaction plus contract value, both lane C."
+    },
+    {
+      "id": "sched-mixed-52",
+      "lane": "A",
+      "intents": ["move"],
+      "confidence": "high",
+      "note": "Status update carries no intent and the pending item is self-owned; the reschedule stands alone in lane A."
+    },
+    {
+      "id": "noise-52",
+      "lane": "D",
+      "intents": ["pii", "process"],
+      "confidence": "medium",
+      "note": "Member ID plus date of birth plus name is personal data, so lane D suppresses even the buried sync question."
+    },
+    {
+      "id": "commercial-53",
+      "lane": "C",
+      "intents": ["money", "complaint"],
+      "confidence": "high",
+      "note": "Challenges a recurring fee and what it covers; pricing plus dissatisfaction, lane C."
+    },
+    {
+      "id": "sched-mixed-54",
+      "lane": "B",
+      "intents": ["book", "money"],
+      "confidence": "high",
+      "note": "Total spend through launch is lane C money; the 30 minute ask is acted on at lane B with immediate notice."
+    },
+    {
+      "id": "noise-54",
+      "lane": "A",
+      "intents": ["none"],
+      "confidence": "high",
+      "note": "Misdirected message; no intent, no action, nobody bothered."
+    },
+    {
+      "id": "commercial-55",
+      "lane": "C",
+      "intents": ["money"],
+      "confidence": "high",
+      "note": "Discount conditioned on dropping a retainer; pricing and contract value, lane C."
+    },
+    {
+      "id": "sched-mixed-56",
+      "lane": "B",
+      "intents": ["book", "problem"],
+      "confidence": "high",
+      "note": "Live data loss that recurs tonight is lane C problem; the same-day time ask is promoted to lane B."
+    },
+    {
+      "id": "noise-56",
+      "lane": "A",
+      "intents": ["none"],
+      "confidence": "high",
+      "note": "Stray characters; nothing happens."
+    },
+    {
+      "id": "commercial-57",
+      "lane": "C",
+      "intents": ["commitment"],
+      "confidence": "medium",
+      "note": "Asks for the definition of a delivery milestone; scope and definition of done is lane C, and with no lawyer or liability it stays short of lane D."
+    },
+    {
+      "id": "sched-mixed-58",
+      "lane": "B",
+      "intents": ["problem", "complaint", "book"],
+      "confidence": "high",
+      "note": "Two week old defect still live plus visible frustration; problem and complaint are lane C, so the sync ask is acted on at lane B."
+    },
+    {
+      "id": "noise-58",
+      "lane": "A",
+      "intents": ["social"],
+      "confidence": "high",
+      "note": "Agreement, not a scheduling request; idiom rule keeps this out of book."
+    },
+    {
+      "id": "commercial-59",
+      "lane": "C",
+      "intents": ["money", "commitment"],
+      "confidence": "high",
+      "note": "Whether a workstream is billed extra in this phase is billing plus scope; typos do not change the intent."
+    },
+    {
+      "id": "sched-mixed-60",
+      "lane": "B",
+      "intents": ["move", "money"],
+      "confidence": "high",
+      "note": "Reschedule is lane A alone, but the payment terms discrepancy is lane C money, promoting the whole thing to lane B."
+    },
+    {
+      "id": "noise-60",
+      "lane": "A",
+      "intents": ["social"],
+      "confidence": "high",
+      "note": "Confirmation of a proposed time already on the table; acknowledgement only."
+    },
+    {
+      "id": "commercial-61",
+      "lane": "C",
+      "intents": ["money", "commitment"],
+      "confidence": "high",
+      "note": "Halving the engagement changes contract value and timeline; move here is idiom for the contract, not a call reschedule."
+    },
+    {
+      "id": "sched-mixed-62",
+      "lane": "B",
+      "intents": ["book", "problem"],
+      "confidence": "high",
+      "note": "Filter reset is a live defect Max must not diagnose; the 20 minute ask is promoted to lane B."
+    },
+    {
+      "id": "noise-62",
+      "lane": "A",
+      "intents": ["social"],
+      "confidence": "high",
+      "note": "All-clear status with no ask; react only."
+    },
+    {
+      "id": "commercial-63",
+      "lane": "C",
+      "intents": ["money", "complaint"],
+      "confidence": "high",
+      "note": "Remaining contract commitment if they stopped is contract value plus a churn signal; the not-a-threat disclaimer does not negate either."
+    },
+    {
+      "id": "sched-mixed-64",
+      "lane": "B",
+      "intents": ["cancel", "commitment"],
+      "confidence": "high",
+      "note": "Skipping the call is lane B; the unowned pre-launch tax config is a scope and ownership commitment in lane C."
+    },
+    {
+      "id": "noise-64",
+      "lane": "A",
+      "intents": ["social"],
+      "confidence": "high",
+      "note": "Approval with no ask; reaction is the correct action."
+    },
+    {
+      "id": "commercial-65",
+      "lane": "C",
+      "intents": ["money", "complaint"],
+      "confidence": "medium",
+      "note": "Praise then a billing grievance straining the relationship; the buried dissatisfaction is the live intent, and either reading of billing lands in lane C."
+    },
+    {
+      "id": "sched-mixed-66",
+      "lane": "B",
+      "intents": ["move", "problem"],
+      "confidence": "high",
+      "note": "Relayed by a colleague but it is still our meeting, so not a third party; the currency defect is lane C and promotes the reschedule to B."
+    },
+    {
+      "id": "noise-66",
+      "lane": "A",
+      "intents": ["resource"],
+      "confidence": "high",
+      "note": "Resend of a link they already have access to; act silently."
+    },
+    {
+      "id": "commercial-67",
+      "lane": "C",
+      "intents": ["money", "commitment", "complaint"],
+      "confidence": "high",
+      "note": "The one pager is dates, dollars and scope, none of which Max may assert, and the framing carries frustration."
+    }
+  ]
+}

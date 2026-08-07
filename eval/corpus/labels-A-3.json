@@ -1,0 +1,704 @@
+{
+  "labels": [
+    {
+      "id": "problems-1",
+      "lane": "C",
+      "intents": ["problem"],
+      "confidence": "high",
+      "note": "Live report of something broken; vague detail does not change that Max cannot diagnose."
+    },
+    {
+      "id": "sched-plain-2",
+      "lane": "A",
+      "intents": ["move"],
+      "confidence": "high",
+      "note": "Shift of an existing call, reversible and unambiguous, so send the link silently."
+    },
+    {
+      "id": "adversarial-2",
+      "lane": "A",
+      "intents": ["none"],
+      "confidence": "high",
+      "note": "Negation rule: the reschedule is explicitly disclaimed, lateness is not a catalogued intent."
+    },
+    {
+      "id": "problems-3",
+      "lane": "C",
+      "intents": ["problem"],
+      "confidence": "high",
+      "note": "Broken behavior on staging plus a diagnostic question Max must not answer."
+    },
+    {
+      "id": "sched-plain-4",
+      "lane": "B",
+      "intents": ["cancel"],
+      "confidence": "high",
+      "note": "Idiom for cancel; policy puts cancellation in act-and-notify as a health signal."
+    },
+    {
+      "id": "adversarial-4",
+      "lane": "A",
+      "intents": ["none"],
+      "confidence": "high",
+      "note": "Explicitly pre-empts a booking; a future heads-up is a hypothetical, no intent."
+    },
+    {
+      "id": "problems-5",
+      "lane": "C",
+      "intents": ["problem"],
+      "confidence": "high",
+      "note": "Live production outage; urgency does not create an intent Max may act on."
+    },
+    {
+      "id": "sched-plain-6",
+      "lane": "A",
+      "intents": ["move"],
+      "confidence": "high",
+      "note": "Request to shift an existing recurring call, unambiguous and reversible."
+    },
+    {
+      "id": "adversarial-6",
+      "lane": "A",
+      "intents": ["process"],
+      "confidence": "high",
+      "note": "Hypothetical outage carries no problem intent; the escalation contact is documented and non-committal."
+    },
+    {
+      "id": "problems-7",
+      "lane": "C",
+      "intents": ["problem"],
+      "confidence": "medium",
+      "note": "Resolved status but a live demand for an incident explanation Max cannot verify or assert."
+    },
+    {
+      "id": "sched-plain-8",
+      "lane": "A",
+      "intents": ["book"],
+      "confidence": "high",
+      "note": "Asking for availability is an ask for time; send the scheduling link."
+    },
+    {
+      "id": "adversarial-8",
+      "lane": "A",
+      "intents": ["none"],
+      "confidence": "high",
+      "note": "Third-party rule: the call being moved is their 3PL's, not ours."
+    },
+    {
+      "id": "problems-9",
+      "lane": "C",
+      "intents": ["problem"],
+      "confidence": "high",
+      "note": "Hedged self-blame does not neutralize a live failure report."
+    },
+    {
+      "id": "sched-plain-10",
+      "lane": "A",
+      "intents": ["move"],
+      "confidence": "high",
+      "note": "Straight reschedule of an existing slot."
+    },
+    {
+      "id": "adversarial-10",
+      "lane": "A",
+      "intents": ["none"],
+      "confidence": "high",
+      "note": "Past-or-resolved rule: closed money matter with an explicit no-action statement."
+    },
+    {
+      "id": "problems-11",
+      "lane": "C",
+      "intents": ["problem"],
+      "confidence": "high",
+      "note": "Sync failure in our system; relayed by a colleague but the subject is ours."
+    },
+    {
+      "id": "sched-plain-12",
+      "lane": "A",
+      "intents": ["book"],
+      "confidence": "high",
+      "note": "Ask for time, terse but unambiguous."
+    },
+    {
+      "id": "adversarial-12",
+      "lane": "A",
+      "intents": ["none"],
+      "confidence": "high",
+      "note": "Resolved and out of scope on their own DNS; no live problem."
+    },
+    {
+      "id": "problems-13",
+      "lane": "C",
+      "intents": ["problem"],
+      "confidence": "high",
+      "note": "Failed webhook deliveries are a live fault report Max must not assess."
+    },
+    {
+      "id": "sched-plain-14",
+      "lane": "A",
+      "intents": ["book"],
+      "confidence": "high",
+      "note": "New meeting request with a preferred window."
+    },
+    {
+      "id": "adversarial-14",
+      "lane": "A",
+      "intents": ["none"],
+      "confidence": "medium",
+      "note": "Status update about their own internal review; keyword legal, but no dispute, request, or action."
+    },
+    {
+      "id": "problems-15",
+      "lane": "C",
+      "intents": ["problem"],
+      "confidence": "high",
+      "note": "Live payment/webhook fault plus a request to confirm a diagnosis Max cannot verify."
+    },
+    {
+      "id": "sched-plain-16",
+      "lane": "A",
+      "intents": ["book"],
+      "confidence": "high",
+      "note": "Neutral ask for time with availability; no dissatisfaction signal, so plain lane A."
+    },
+    {
+      "id": "adversarial-16",
+      "lane": "C",
+      "intents": ["money"],
+      "confidence": "high",
+      "note": "Invoicing for extra work; Max must never state a figure."
+    },
+    {
+      "id": "problems-17",
+      "lane": "C",
+      "intents": ["problem"],
+      "confidence": "high",
+      "note": "Negative stock in admin is a live data fault; dictation noise is irrelevant."
+    },
+    {
+      "id": "sched-plain-18",
+      "lane": "B",
+      "intents": ["cancel"],
+      "confidence": "high",
+      "note": "Cancel the call, offer rebooking, and post it internally as a health signal."
+    },
+    {
+      "id": "adversarial-18",
+      "lane": "C",
+      "intents": ["complaint"],
+      "confidence": "medium",
+      "note": "Sarcastic dissatisfaction about the deliverable; escalation tone belongs with a person."
+    },
+    {
+      "id": "problems-19",
+      "lane": "C",
+      "intents": ["problem"],
+      "confidence": "high",
+      "note": "Settlement/order mismatch is a data fault in their store, not billing between us."
+    },
+    {
+      "id": "sched-plain-20",
+      "lane": "A",
+      "intents": ["move"],
+      "confidence": "high",
+      "note": "Shift request; terse but the intent itself is not in doubt."
+    },
+    {
+      "id": "adversarial-20",
+      "lane": "B",
+      "intents": ["book", "complaint"],
+      "confidence": "high",
+      "note": "Scheduling driven by dissatisfaction: book it and flag hard, per the lane B catalogue entry."
+    },
+    {
+      "id": "problems-21",
+      "lane": "C",
+      "intents": ["problem"],
+      "confidence": "high",
+      "note": "Broken links are a live defect; low stated urgency does not lower the lane."
+    },
+    {
+      "id": "sched-plain-22",
+      "lane": "B",
+      "intents": ["cancel"],
+      "confidence": "high",
+      "note": "Same-day no-show is a cancellation: act and notify."
+    },
+    {
+      "id": "adversarial-22",
+      "lane": "A",
+      "intents": ["book"],
+      "confidence": "high",
+      "note": "Ask for time explicitly stripped of dissatisfaction, so plain lane A, not the flagged variant."
+    },
+    {
+      "id": "problems-23",
+      "lane": "C",
+      "intents": ["problem"],
+      "confidence": "high",
+      "note": "Customer-reported form failure with evidence; unreproducible is still a live report."
+    },
+    {
+      "id": "sched-plain-24",
+      "lane": "A",
+      "intents": ["book"],
+      "confidence": "high",
+      "note": "Ask for time with no dissatisfaction stated; uncertainty about tone is not uncertainty about intent."
+    },
+    {
+      "id": "adversarial-24",
+      "lane": "C",
+      "intents": ["problem"],
+      "confidence": "high",
+      "note": "Visual defect report; the self-correcting typo is noise, severity does not change the lane."
+    },
+    {
+      "id": "problems-25",
+      "lane": "C",
+      "intents": ["problem"],
+      "confidence": "high",
+      "note": "Overselling is a live inventory fault; downstream refunds are theirs, not our billing."
+    },
+    {
+      "id": "sched-plain-26",
+      "lane": "A",
+      "intents": ["book"],
+      "confidence": "high",
+      "note": "Ask for time; send the link."
+    },
+    {
+      "id": "adversarial-26",
+      "lane": "A",
+      "intents": ["none"],
+      "confidence": "high",
+      "note": "Hypothetical rule: an explicitly conditional slip carries no commitment intent."
+    },
+    {
+      "id": "problems-27",
+      "lane": "C",
+      "intents": ["problem"],
+      "confidence": "high",
+      "note": "Paid-but-no-order records are a live fault; calm tone does not change the lane."
+    },
+    {
+      "id": "sched-plain-28",
+      "lane": "B",
+      "intents": ["cancel"],
+      "confidence": "high",
+      "note": "Drop the meeting: cancel, offer rebooking, notify."
+    },
+    {
+      "id": "adversarial-28",
+      "lane": "C",
+      "intents": ["commitment"],
+      "confidence": "medium",
+      "note": "Asks whether a deliverable is still in scope; scope answers require a person."
+    },
+    {
+      "id": "problems-29",
+      "lane": "A",
+      "intents": ["none"],
+      "confidence": "high",
+      "note": "Past-or-resolved rule: explicitly retracted as a false alarm, nothing live."
+    },
+    {
+      "id": "sched-plain-30",
+      "lane": "A",
+      "intents": ["book"],
+      "confidence": "high",
+      "note": "Ask for time today; send the link."
+    },
+    {
+      "id": "adversarial-30",
+      "lane": "A",
+      "intents": ["none"],
+      "confidence": "high",
+      "note": "Explicitly negated and unrelated to our system; no card number present, so no PII."
+    },
+    {
+      "id": "problems-31",
+      "lane": "C",
+      "intents": ["problem"],
+      "confidence": "high",
+      "note": "Degraded performance is still a live defect; not broken qualifies severity, not existence."
+    },
+    {
+      "id": "sched-plain-32",
+      "lane": "B",
+      "intents": ["cancel"],
+      "confidence": "high",
+      "note": "Explicit cancellation; act and notify because it is an account health signal."
+    },
+    {
+      "id": "adversarial-32",
+      "lane": "C",
+      "intents": ["ambiguous"],
+      "confidence": "medium",
+      "note": "Reverses a prior downgrade but the referent is unrecoverable; uncertain intent means hand over."
+    },
+    {
+      "id": "problems-33",
+      "lane": "C",
+      "intents": ["problem"],
+      "confidence": "high",
+      "note": "Recurring data drift across SKUs is a live fault Max cannot diagnose."
+    },
+    {
+      "id": "sched-plain-34",
+      "lane": "A",
+      "intents": ["move"],
+      "confidence": "high",
+      "note": "Explicit day-to-day shift of an existing call."
+    },
+    {
+      "id": "adversarial-34",
+      "lane": "A",
+      "intents": ["none"],
+      "confidence": "high",
+      "note": "Full retraction of an earlier report based on a stale screenshot; nothing live."
+    },
+    {
+      "id": "problems-35",
+      "lane": "C",
+      "intents": ["problem"],
+      "confidence": "high",
+      "note": "Duplicate authorization on a real order is a live fault; the deadline pressure stays with a person."
+    },
+    {
+      "id": "sched-plain-36",
+      "lane": "A",
+      "intents": ["book"],
+      "confidence": "high",
+      "note": "Ask for time on a stated day; send the link."
+    },
+    {
+      "id": "adversarial-36",
+      "lane": "A",
+      "intents": ["none"],
+      "confidence": "high",
+      "note": "Negation rule: an explicit request for no further change carries no intent."
+    },
+    {
+      "id": "problems-37",
+      "lane": "C",
+      "intents": ["problem"],
+      "confidence": "high",
+      "note": "Wrong-cohort routing is a live defect with partial reproduction; a person must diagnose."
+    },
+    {
+      "id": "sched-plain-38",
+      "lane": "A",
+      "intents": ["book"],
+      "confidence": "high",
+      "note": "Neutral status-review meeting ask; no dissatisfaction signal, so plain lane A."
+    },
+    {
+      "id": "adversarial-38",
+      "lane": "A",
+      "intents": ["none"],
+      "confidence": "high",
+      "note": "Negation plus third party: an optional attendee's conflict, and the call explicitly stands."
+    },
+    {
+      "id": "problems-39",
+      "lane": "C",
+      "intents": ["problem"],
+      "confidence": "high",
+      "note": "Asking whether errors are shared is a live fault report Max cannot confirm or deny."
+    },
+    {
+      "id": "sched-plain-40",
+      "lane": "B",
+      "intents": ["cancel"],
+      "confidence": "high",
+      "note": "Explicit cancellation of a specific call; act and notify."
+    },
+    {
+      "id": "adversarial-40",
+      "lane": "A",
+      "intents": ["none"],
+      "confidence": "medium",
+      "note": "Third-party ask already declined by the client; negated scope request, nothing to act on."
+    },
+    {
+      "id": "problems-41",
+      "lane": "C",
+      "intents": ["problem"],
+      "confidence": "high",
+      "note": "Wrong cart totals with a reproduction condition; a live defect."
+    },
+    {
+      "id": "sched-plain-42",
+      "lane": "A",
+      "intents": ["move"],
+      "confidence": "high",
+      "note": "Push to a later week is a reschedule, not a cancellation."
+    },
+    {
+      "id": "adversarial-42",
+      "lane": "C",
+      "intents": ["money"],
+      "confidence": "medium",
+      "note": "Negation covers the request, not the live cost question; Max must never state a figure."
+    },
+    {
+      "id": "problems-43",
+      "lane": "C",
+      "intents": ["problem"],
+      "confidence": "high",
+      "note": "Empty shipping options for a specific zip is a live defect; a zip is not PII."
+    },
+    {
+      "id": "sched-plain-44",
+      "lane": "A",
+      "intents": ["book"],
+      "confidence": "high",
+      "note": "Ask for time with a proposed slot; send the link."
+    },
+    {
+      "id": "adversarial-44",
+      "lane": "C",
+      "intents": ["commitment"],
+      "confidence": "low",
+      "note": "Reversal that puts asset ownership inside scope; brushes rights/liability, but no dispute or counsel makes lane D unsettled."
+    },
+    {
+      "id": "problems-45",
+      "lane": "C",
+      "intents": ["problem"],
+      "confidence": "high",
+      "note": "Reproduced data-loss defect in checkout; clearly a live problem."
+    },
+    {
+      "id": "sched-plain-46",
+      "lane": "A",
+      "intents": ["book"],
+      "confidence": "high",
+      "note": "Ask for a short block of time; send the link."
+    },
+    {
+      "id": "adversarial-46",
+      "lane": "A",
+      "intents": ["none"],
+      "confidence": "high",
+      "note": "Past-or-resolved rule: the invoice question is closed on their side, nothing live and nothing asked."
+    },
+    {
+      "id": "problems-47",
+      "lane": "C",
+      "intents": ["problem"],
+      "confidence": "high",
+      "note": "Buried defect inside praise: the header did not pick up the change."
+    },
+    {
+      "id": "sched-plain-48",
+      "lane": "A",
+      "intents": ["move"],
+      "confidence": "high",
+      "note": "Reschedule of a specific call; apology is not a separate intent."
+    },
+    {
+      "id": "adversarial-48",
+      "lane": "A",
+      "intents": ["move"],
+      "confidence": "medium",
+      "note": "The cancellation belongs to a third party; what is directed at us is open permission to reschedule."
+    },
+    {
+      "id": "problems-49",
+      "lane": "C",
+      "intents": ["problem"],
+      "confidence": "high",
+      "note": "Vague but live report that a page does not match what was approved."
+    },
+    {
+      "id": "sched-plain-50",
+      "lane": "B",
+      "intents": ["cancel"],
+      "confidence": "high",
+      "note": "Idiom for cancel; act, offer rebooking, notify."
+    },
+    {
+      "id": "adversarial-50",
+      "lane": "A",
+      "intents": ["none"],
+      "confidence": "high",
+      "note": "Pre-announced third-party downtime with an explicit no-action instruction; the breakage is expected."
+    },
+    {
+      "id": "problems-51",
+      "lane": "C",
+      "intents": ["problem"],
+      "confidence": "high",
+      "note": "Regression report plus a deploy question Max cannot verify or answer."
+    },
+    {
+      "id": "sched-plain-52",
+      "lane": "A",
+      "intents": ["move"],
+      "confidence": "high",
+      "note": "Shift of a recurring slot; reversible and unambiguous."
+    },
+    {
+      "id": "adversarial-52",
+      "lane": "C",
+      "intents": ["commitment"],
+      "confidence": "medium",
+      "note": "Asks Max to confirm a launch parameter for the board; never assert a fact or state a figure."
+    },
+    {
+      "id": "problems-53",
+      "lane": "C",
+      "intents": ["problem"],
+      "confidence": "high",
+      "note": "Recurrence of a supposedly fixed fault; live and needs a person, not a status claim."
+    },
+    {
+      "id": "sched-plain-54",
+      "lane": "B",
+      "intents": ["cancel"],
+      "confidence": "high",
+      "note": "Terse cancellation; act and notify."
+    },
+    {
+      "id": "adversarial-54",
+      "lane": "A",
+      "intents": ["none"],
+      "confidence": "high",
+      "note": "Explicit retraction of the prior item; nothing live remains."
+    },
+    {
+      "id": "problems-55",
+      "lane": "A",
+      "intents": ["book"],
+      "confidence": "low",
+      "note": "Incident resolved and out of scope; the reinstated check-in is a scheduling action, though arguably nothing changes."
+    },
+    {
+      "id": "sched-plain-56",
+      "lane": "A",
+      "intents": ["book"],
+      "confidence": "high",
+      "note": "Ask for time across two days; no dissatisfaction, just a preference for talking."
+    },
+    {
+      "id": "adversarial-56",
+      "lane": "C",
+      "intents": ["problem"],
+      "confidence": "medium",
+      "note": "Hedge, not a retraction: probably not real still leaves a live report, like the not-sure-if-a-bug case."
+    },
+    {
+      "id": "problems-57",
+      "lane": "C",
+      "intents": ["problem"],
+      "confidence": "high",
+      "note": "Intermittent price mismatch plus a buried diagnostic question; a person must handle both."
+    },
+    {
+      "id": "sched-plain-58",
+      "lane": "B",
+      "intents": ["cancel"],
+      "confidence": "high",
+      "note": "Explicit cancellation of today's call; act and notify."
+    },
+    {
+      "id": "adversarial-58",
+      "lane": "C",
+      "intents": ["commitment"],
+      "confidence": "high",
+      "note": "Negation only blocks replying for them; the live ask is what may be said about launch timing."
+    },
+    {
+      "id": "problems-59",
+      "lane": "C",
+      "intents": ["problem"],
+      "confidence": "high",
+      "note": "Receipt shows the wrong total; a display defect, not a billing matter between us."
+    },
+    {
+      "id": "sched-plain-60",
+      "lane": "A",
+      "intents": ["move"],
+      "confidence": "high",
+      "note": "Small shift of an existing call; reversible and unambiguous."
+    },
+    {
+      "id": "adversarial-60",
+      "lane": "C",
+      "intents": ["commitment"],
+      "confidence": "medium",
+      "note": "Asks how fast something can happen; a timing answer is a commitment Max must not make."
+    },
+    {
+      "id": "problems-61",
+      "lane": "C",
+      "intents": ["problem"],
+      "confidence": "high",
+      "note": "Repeated auth prompt is a live defect; the word password appears but no credential does, so no PII."
+    },
+    {
+      "id": "sched-plain-62",
+      "lane": "A",
+      "intents": ["book"],
+      "confidence": "high",
+      "note": "Explicit yes plus a request for times; send the link."
+    },
+    {
+      "id": "adversarial-62",
+      "lane": "A",
+      "intents": ["resource"],
+      "confidence": "high",
+      "note": "The 404s are stale bookmarks, not a fault; the live ask is a link they already have access to."
+    },
+    {
+      "id": "problems-63",
+      "lane": "C",
+      "intents": ["problem"],
+      "confidence": "high",
+      "note": "Hedged discrepancy report is still live; Max cannot rule it expected."
+    },
+    {
+      "id": "sched-plain-64",
+      "lane": "B",
+      "intents": ["cancel"],
+      "confidence": "high",
+      "note": "Delegated but the meeting is ours with Dana; cancel and notify."
+    },
+    {
+      "id": "adversarial-64",
+      "lane": "A",
+      "intents": ["none"],
+      "confidence": "high",
+      "note": "Self-retraction of a prior report; nothing live to act on."
+    },
+    {
+      "id": "problems-65",
+      "lane": "C",
+      "intents": ["complaint", "advice", "commitment"],
+      "confidence": "high",
+      "note": "Confidence-in-the-work escalation asking for a readiness judgment on a launch date; every part is a person's call."
+    },
+    {
+      "id": "sched-plain-66",
+      "lane": "A",
+      "intents": ["move"],
+      "confidence": "high",
+      "note": "Reschedule plus an availability question, both parts of the same shift."
+    },
+    {
+      "id": "adversarial-66",
+      "lane": "A",
+      "intents": ["social"],
+      "confidence": "high",
+      "note": "Pleasantry and repair of tone: react, do not compose a reply."
+    },
+    {
+      "id": "problems-67",
+      "lane": "C",
+      "intents": ["problem"],
+      "confidence": "high",
+      "note": "Mobile usability defect on the card field; a field name is not a card number, so no PII."
+    }
+  ]
+}
