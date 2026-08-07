@@ -1,9 +1,11 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChannelPane } from "./ChannelPane";
 import { ReviewPane } from "./ReviewPane";
 import { TracePanel } from "./TracePanel";
+import { CaseRail } from "./CaseRail";
+import { Argument } from "./Argument";
 import { runPipeline } from "@/lib/engine/pipeline";
 import { legacyClassify, legacyWouldAutoSend } from "@/lib/engine/simulate";
 import { ADVISOR, CHANNEL_HISTORY, CLIENT, GROUPS, SCENARIOS, type Scenario } from "@/lib/scenarios";
@@ -26,6 +28,24 @@ const EMPTY_SCORECARD: Scorecard = {
   pingsAvoided: 0,
   blockedByCompliance: 0,
   saidNothing: 0,
+};
+
+/**
+ * The case the page opens on.
+ *
+ * A one-screen layout cannot afford an empty first impression, and this is the
+ * beat worth leading with: the model ignores its prompt, writes a confident
+ * reply quoting a price and promising a date, and the layer underneath renders
+ * the card with no send button at all.
+ */
+const OPENING_CASE = "model-misbehaves";
+
+const DOT: Record<string, string> = {
+  auto_sent: "bg-signal-live",
+  pending: "bg-signal-hold",
+  awaiting_human: "bg-signal-hold",
+  blocked: "bg-signal-block",
+  skipped: "bg-border",
 };
 
 export function MaxDemo() {
@@ -163,6 +183,16 @@ export function MaxDemo() {
     [process]
   );
 
+  // Open on a case already run. Done in an effect rather than in initial state
+  // so the server-rendered markup and the first client render agree.
+  const opened = useRef(false);
+  useEffect(() => {
+    if (opened.current) return;
+    opened.current = true;
+    const s = SCENARIOS.find((x) => x.id === OPENING_CASE);
+    if (s) runScenario(s);
+  }, [runScenario]);
+
   const sendCard = useCallback(
     (id: string) => {
       const card = cards.find((c) => c.id === id);
@@ -254,7 +284,7 @@ export function MaxDemo() {
   const active = SCENARIOS.find((s) => s.id === activeScenario);
 
   return (
-    <div className="mx-auto max-w-[1280px] px-[clamp(1.25rem,5vw,3.5rem)] py-[clamp(2.5rem,6vw,4.5rem)]">
+    <div className="mx-auto max-w-[1280px] px-[clamp(1.25rem,5vw,3.5rem)] pb-[clamp(3rem,7vw,5rem)] pt-[clamp(1.5rem,3.5vw,2rem)]">
       <header>
         <div className="flex items-center gap-3">
           <span className="hidden md:block h-px w-8 bg-text-muted" />
@@ -263,71 +293,69 @@ export function MaxDemo() {
           </span>
         </div>
 
-        <h1 className="mt-5 font-cdg text-[clamp(2rem,5.5vw,3.5rem)] font-medium leading-[1.02] tracking-[-0.02em] text-text max-w-[19ch]">
+        <h1 className="mt-4 max-w-[19ch] font-cdg text-[clamp(1.625rem,3.6vw,2.375rem)] font-medium leading-[1.04] tracking-[-0.02em] text-text">
           The model never gets the last word.
         </h1>
 
-        <p className="mt-6 font-body text-[16px] leading-[1.75] text-text-secondary max-w-[64ch]">
-          Max is an AI assistant that sits in the Slack channels a company shares with its clients.
-          It answers a short list of routine scheduling questions by itself. Everything else it turns
-          into a draft, and waits for a person to press send.
+        <p className="mt-3.5 max-w-[84ch] font-body text-[15.5px] leading-[1.65] text-text-secondary">
+          Max sits in the Slack channels a company shares with its clients. It answers a short list
+          of routine scheduling questions alone, and drafts everything else for a person.
         </p>
-        <p className="mt-4 font-body text-[16px] leading-[1.75] text-text-secondary max-w-[64ch]">
-          The AI is only the middle step. Plain code runs before it and after it, and that code can
-          only ever make Max do <em className="not-italic font-semibold text-text">less</em> than the
-          AI suggested, never more. Pick a case below and watch what happens on the right, then read
-          how it decided underneath.
-        </p>
-
-        <div className="mt-9 h-px bg-text opacity-20" />
       </header>
 
-      <nav className="mt-8 flex flex-col gap-6" aria-label="Scenarios">
-        {GROUPS.map((g) => (
-          <div key={g.id} className="grid grid-cols-1 gap-x-8 gap-y-2 md:grid-cols-[190px_1fr]">
-            <div>
-              <h2 className="font-body text-[14px] font-semibold text-text">{g.title}</h2>
-              <p className="mt-1 font-body text-[12.5px] leading-[1.6] text-text-muted">{g.blurb}</p>
-            </div>
-            <div className="flex flex-wrap content-start gap-2">
-              {g.scenarios.map((s) => {
-                const on = activeScenario === s.id;
-                return (
-                  <button
-                    key={s.id}
-                    onClick={() => runScenario(s)}
-                    aria-pressed={on}
-                    className={`h-fit rounded-[4px] border px-3 py-2 font-body text-[13.5px] transition-colors ${
-                      on
-                        ? "border-text bg-text text-bg"
-                        : "border-border text-text-secondary hover:border-text hover:text-text"
-                    }`}
-                  >
-                    {s.label}
-                  </button>
-                );
-              })}
-            </div>
+      {/* The working demo, sized to the first screen. Everything that changes
+          when you click is inside this frame or in the line above it. */}
+      <div className="mt-6">
+        <div className="rounded-[6px] border border-border-light bg-surface-elevated px-5 py-3">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1.5">
+            <p className="min-w-0 font-cdg text-[clamp(1.0625rem,1.9vw,1.375rem)] font-medium leading-snug tracking-[-0.01em] text-text">
+              {result ? result.headline : "Pick a case, or type a message as the client."}
+            </p>
+            {result && (
+              <span className="flex shrink-0 items-center gap-2">
+                <span
+                  aria-hidden="true"
+                  className={`size-1.5 rounded-full ${DOT[result.status] ?? "bg-border"}`}
+                />
+                <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-text-muted">
+                  {result.handledBy === "max"
+                    ? "handled by Max"
+                    : result.handledBy === "human"
+                      ? "handled by a person"
+                      : "nobody needed"}
+                </span>
+              </span>
+            )}
           </div>
-        ))}
-        <div className="flex justify-end">
-          <button
-            onClick={reset}
-            className="rounded-[4px] border border-border-light px-3 py-2 font-body text-[13.5px] text-text-muted transition-colors hover:border-text hover:text-text"
-          >
-            Reset the channel
-          </button>
+          {active && (
+            <p className="mt-1.5 max-w-[96ch] font-body text-[12.5px] leading-[1.55] text-text-muted">
+              {active.premise}
+            </p>
+          )}
         </div>
-      </nav>
 
-      {active && (
-        <p className="mt-6 border-l-2 border-text/25 pl-4 font-body text-[14.5px] leading-[1.75] text-text-secondary max-w-[74ch]">
-          {active.premise}
-        </p>
-      )}
+        <div className="mt-3 grid grid-rows-[auto_440px_440px] gap-3 lg:h-[clamp(360px,50vh,520px)] lg:grid-cols-[212px_1fr_1fr] lg:grid-rows-1">
+          <CaseRail groups={GROUPS} activeId={activeScenario} onPick={runScenario} onReset={reset} />
+          <ChannelPane
+            channelName={CLIENT.company.toLowerCase().replace(/\s+/g, "-")}
+            members={4}
+            topic={`Shared channel with ${CLIENT.company}. ${ADVISOR.name} is the account lead.`}
+            messages={messages}
+            onSend={(text) => process(text)}
+            placeholder={`Type as ${CLIENT.firstName}, the client`}
+          />
+          <ReviewPane
+            cards={cards}
+            onSend={sendCard}
+            onDismiss={dismissCard}
+            onAcknowledge={acknowledgeCard}
+            onPostScorecard={postScorecard}
+          />
+        </div>
+      </div>
 
       {legacyWarning && (
-        <div className="mt-4 rounded-[4px] border border-signal-block/35 px-4 py-3.5 max-w-[74ch]">
+        <div className="mt-5 max-w-[74ch] rounded-[4px] border border-signal-block/35 px-4 py-3.5">
           <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-signal-block">
             The classifier this replaced &middot; also simulated
           </p>
@@ -341,33 +369,17 @@ export function MaxDemo() {
         </div>
       )}
 
-      <div className="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2 lg:h-[560px]">
-        <ChannelPane
-          channelName={CLIENT.company.toLowerCase().replace(/\s+/g, "-")}
-          members={4}
-          topic={`Shared channel with ${CLIENT.company}. ${ADVISOR.name} is the account lead.`}
-          messages={messages}
-          onSend={(text) => process(text)}
-          placeholder={`Type as ${CLIENT.firstName}, the client`}
-        />
-        <ReviewPane
-          cards={cards}
-          onSend={sendCard}
-          onDismiss={dismissCard}
-          onAcknowledge={acknowledgeCard}
-          onPostScorecard={postScorecard}
-        />
-      </div>
-
-      <div className="mt-14">
+      <div className="mt-12">
         <TracePanel result={result} />
       </div>
 
-      <footer className="mt-16 border-t border-border-light pt-8">
+      <Argument tally={tally} />
+
+      <footer className="mt-20 border-t border-border-light pt-8">
         <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-text-muted">
           What is real here
         </span>
-        <div className="mt-4 grid grid-cols-1 gap-x-10 gap-y-5 md:grid-cols-2 max-w-4xl">
+        <div className="mt-4 grid max-w-4xl grid-cols-1 gap-x-10 gap-y-5 md:grid-cols-2">
           <p className="font-body text-[14px] leading-[1.8] text-text-secondary">
             The compliance filter, the PII redaction, the pre-filter and the reconciliation layer are
             the production logic, with the word lists retargeted to a generic services vocabulary.

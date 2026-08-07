@@ -52,11 +52,10 @@ export function TracePanel({ result }: { result: PipelineResult | null }) {
         </p>
       ) : (
         <>
-          <p className="mt-6 max-w-[68ch] font-cdg text-[22px] font-medium leading-snug tracking-[-0.01em] text-text">
-            {result.headline}
-          </p>
-
-          <ol className="mt-6">
+          {/* No headline repeated here: the frame above states the verdict at
+              the moment of the click, and saying it twice a hundred pixels
+              apart reads as filler. */}
+          <ol className="mt-2">
             {result.trace.map((step, i) => (
               <li
                 key={i}
