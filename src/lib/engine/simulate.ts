@@ -12,9 +12,11 @@
  * is honest about being simulated is more useful than a live one you cannot
  * afford to leave running on a public URL.
  *
- * The rule precedence below mirrors the prompt: the always-divert categories
- * outrank the safe zone, and a transactional ask only earns a link when that ask
- * is the WHOLE message.
+ * The rule precedence below mirrors the prompt. Note what changed: an ask used
+ * to earn a link only when it was the WHOLE message, which sounded careful and
+ * measured 95.9% unnecessary escalation on 402 messages. Each intent is now
+ * judged on its own, and an intent a person must own escalates without
+ * cancelling one Max may safely handle.
  *
  * TWO STANDING CONSTRAINTS ON THIS FILE
  *
@@ -49,7 +51,8 @@ const NEG_WORD =
 // charging me for" is a billing question, and "I am not asking for a guarantee
 // but will this be done by Friday" is a delivery-date question. Both were
 // silently suppressed by the first version of this guard.
-const STANCE_VERB = 'sure|certain|positive|clear|know|understand|think|say|saying|said|asking|ask|mean'
+const STANCE_VERB =
+  'sure|certain|positive|clear|know|understand|think|say|saying|said|asking|ask|mean|recognis\\w*|recogniz\\w*|recall|remember|follow|see|get'
 
 const NEGATION = new RegExp(`\\b(?:${NEG_WORD})\\b(?!\\s+(?:${STANCE_VERB})\\b)`, 'i')
 
@@ -106,7 +109,7 @@ function negatedInClause(text: string, at: number, matched: string): boolean {
  * problem report.
  */
 const DISCLAIMER =
-  /\bno need\b|\bno questions\b|\bno action needed\b|\bnothing needed\b|\bnothing for you\b|\bnothing to do with\b|\bunrelated\b|\bignore (?:any|the|my|that)\b|\bnever ?mind\b|\bdisregard\b|\balready (?:fixed|paid|sorted|submitted|handled|got|have|done|filled)\b|\bis fixed now\b|\bcleared up\b|\ball (?:resolved|sorted)\b|\bsorted (?:it|the|that|itself)\b|\bresolved itself\b|\bworked fine\b|\bcame through fine\b|\bturned it around\b|\bthanks for (?:sorting|fixing|handling|jumping on)\b|\bour old\b|\bthe other agency\b|\bprevious (?:agency|vendor)\b|\bused to\b/i
+  /\bno need\b(?!\s+to\s+(?:find|rebook|reschedul\w*|book|set up|pick)\b)|\bno questions\b|\bno action needed\b|\bnothing needed\b|\bnothing for you\b|\bnothing to do with\b|\bunrelated\b|\bignore (?:any|the|my|that)\b|\bnever ?mind\b|\bdisregard\b|\balready (?:fixed|paid|sorted|submitted|handled|got|have|done|filled)\b|\bis fixed now\b|\bcleared up\b|\ball (?:resolved|sorted)\b|\bsorted (?:it|the|that|itself)\b|\bresolved itself\b|\bworked fine\b|\bcame through fine\b|\bturned it around\b|\bthanks for (?:sorting|fixing|handling|jumping on)\b|\bour old\b|\bthe other agency\b|\bprevious (?:agency|vendor)\b|\bused to\b/i
 
 /**
  * The client is asking about a situation that has not happened.
@@ -120,8 +123,13 @@ const DISCLAIMER =
 // verb of uncertainty it is a complementizer: "I am not sure IF this is a bug,
 // but the upload fails every time" is a live report, and reading that "if" as
 // hypothetical suppressed the report entirely.
+// And "if you can", "if that works", "whenever works for you" are politeness,
+// not conditions. They attach to a REQUEST the client is making right now.
+// Reading them as what-ifs suppressed "put 20 min on for tomorrow if you can"
+// and "throw something on my calendar for whenever works for you", which are
+// two of the plainest booking requests in the whole corpus.
 const HYPOTHETICAL =
-  /(?<!\b(?:sure|know|knows|knew|check|checking|see|ask|asking|wonder|wondering|tell|told|confirm|verify)\s)\bif\b|\bin case\b|\bwhenever\b|\bhypothetically\b|\bfor next time\b|\bdown the road\b|\bgoing forward\b|\bfor the future\b|\bfor planning purposes\b|\bwhat happens (?:if|when)\b|\bhow much notice\b|\bwhat is the (?:process|cutoff|policy)\b|\bis it possible to\b/i
+  /(?<!\b(?:sure|know|knows|knew|check|checking|see|ask|asking|wonder|wondering|tell|told|confirm|verify)\s)\bif\b(?!\s+(?:you can|you could|possible|that works|thats ok|that's ok|you have|there'?s|need be|not|its easier|it'?s easier))|\bin case\b|\bwhenever\b(?!\s+(?:works|is good|suits|you))|\bhypothetically\b|\bfor next time\b|\bdown the road\b|\bgoing forward\b|\bfor the future\b|\bfor planning purposes\b|\bwhat happens (?:if|when)\b|\bhow much notice\b|\bwhat is the (?:process|cutoff|policy)\b|\bis it possible to\b/i
 
 /**
  * Somebody else's meeting, somebody else's problem.
@@ -139,14 +147,26 @@ const WITH_OTHERS = /\b(?:call|meeting|sync)\s+with\s+(?:our|my|their|a|an|the)\
 const PERSONAL_RELATION =
   /\b(?:my|our|their|his|her)\s+(?:\w+\s+)?(?:sister|brother|kid|kids|son|daughter|wife|husband|mum|mom|dad|parents|neighbou?r|friend)\b\s+(?:is|was|are|were|has|had|cannot|can'?t)\b/i
 
-/** Every reason a matched rule should keep its mouth shut. */
-function standsDown(text: string, at: number, matched: string): boolean {
+/**
+ * Every reason a matched rule should keep its mouth shut.
+ *
+ * PERSONAL_RELATION is scoped to the sensitive rules only. It exists to stop
+ * "my sister is disappointed she cannot make the launch party" being read as a
+ * client complaint, where the relation is the SUBJECT of the feeling. On the
+ * action side the relation is usually the REASON for a perfectly real request:
+ * "were gonna have to move the check in this week, my kid has a thing at
+ * school" is our check-in, and standing down on it left the client waiting.
+ *
+ * The gate that stops rules over-firing can itself over-fire, and it is harder
+ * to notice, because a guard that suppresses too much looks like caution.
+ */
+function standsDown(text: string, at: number, matched: string, scope: 'action' | 'sensitive'): boolean {
   return (
     negatedInClause(text, at, matched) ||
     DISCLAIMER.test(text) ||
     THIRD_PARTY_SUBJECT.test(text) ||
     WITH_OTHERS.test(text) ||
-    PERSONAL_RELATION.test(text)
+    (scope === 'sensitive' && PERSONAL_RELATION.test(text))
   )
 }
 
@@ -211,54 +231,174 @@ const SENSITIVE_RULES: Array<{
 ]
 
 // ---------------------------------------------------------------------------
-// A clean transactional ask.
+// Intent recognition.
 //
-// Every pattern here requires the scheduling word's OBJECT to be adjacent, not
-// merely somewhere in the next forty characters. That gap was doing real
-// damage: "push the deck over to me before the meeting" sent a reschedule
-// link, "my schedule is packed but I'll be on the call" sent a booking link,
-// and "cancel my dentist appointment tomorrow" told the client a human would
-// cancel their call with us.
+// This used to be four regexes, each anchored on a verb: book|schedule|set up|
+// get on|grab, move|push|change|shift|bump, cancel, and a form pattern. Tested
+// against 21 phrasings written by the same person in the same sitting, it looked
+// acceptable: 10 of 21. Tested against 402 messages written by somebody else, it
+// handled 5 of 134. book 1/74. move 3/35. cancel 1/25.
+//
+// The gap is not carelessness, it is that people do not name the action. They
+// describe the world and leave the action implied: "when are you free this
+// week", "got 20 min thursday", "do you have half an hour tomorrow", "cant make
+// tomorrow", "throw something on my calendar". Not one contains a scheduling
+// verb. All five are unambiguous requests.
+//
+// So: several narrow cues per intent instead of one clever pattern. Each cue is
+// defensible on its own and each passes the stand-down gate before it fires, so
+// widening recognition here does not widen what gets acted on while negated,
+// hypothetical, or about somebody else's calendar.
 // ---------------------------------------------------------------------------
 
-const DAY = 'tomorrow|today|monday|tuesday|wednesday|thursday|friday|next week|this week'
+const DAY =
+  "tomorrow|today|tonight|tmrw|monday|tuesday|wednesday|thursday|friday|saturday|sunday|mon|tues?|weds?|thurs?|fri|next week|this week|later this week|early next week"
 const OURS = 'call|meeting|check-?in|session|sync'
-const DET = 'a|an|the|my|our|your|this|that|some'
+// What counts as one of our conversations, for recognition. Wider than OURS,
+// which stays narrow because it also guards the tighter move patterns below.
+const MEET =
+  "calls?|meetings?|check-? ?ins?|checkins?|session|sync|chat|zoom|standup|stand-? ?up|catch-? ?up|huddle|1:1|one on one|convo|conversation|debrief"
+const DUR = "\\d{1,3}\\s?(?:min(?:ute)?s?|hrs?|hours?)|half an hour|an hour|a half hour"
+// Self-grouped on purpose. Written bare, `(?:${DET}\s+)?` expands to
+// `(?:a|an|...|some\s+)?` and the \s+ binds to the last alternative only, so
+// "cancel my call" silently stopped matching and every cancellation fell
+// through to a human. An alternation handed to a template literal must carry
+// its own group.
+const DET = '(?:a|an|the|my|our|your|this|that|some)'
 // The ONE word allowed between the determiner and the noun, and only if it
 // says WHEN rather than WHICH. "Cancel our Thursday call" is our call; "push
 // our board meeting to next week" is their board meeting, and moving it is
 // none of our business.
 const QUAL =
-  'tomorrow|today|monday|tuesday|wednesday|thursday|friday|next|last|upcoming|scheduled|weekly|regular|intro|check|quick|kickoff|kick-off|1:1|one on one'
+  "(?:tomorrow|today|monday|tuesday|wednesday|thursday|friday|next|last|upcoming|scheduled|weekly|regular|intro|check|quick|kickoff|kick-off|1:1|one on one)(?:'?s)?"
 
-const TRANSACTIONAL: Array<{ intent: LinkIntent; pattern: RegExp }> = [
-  {
-    intent: 'reschedule',
-    pattern: new RegExp(
-      `\\b(?:reschedule|move|push|change|shift|bump)\\b\\s+(?:${DET})?\\s*(?:(?:${QUAL})\\s+)?(?:${OURS})\\b|\\breschedul(?:e|ing)\\b(?!\\s+(?:my|our|their|the)\\s+(?!${OURS})\\w+)`,
-      'i'
-    ),
-  },
+// A cancellation that also asks for a replacement slot is a reschedule. Same
+// inability, different ask, and the difference decides whether the client gets
+// a rebooking link or a confirmation.
+const REBOOK_CUE =
+  /\b(?:another|a different|some other|a new)\s+(?:day|time|slot|date)\b|\bresched\w*\b|\bmove it\b|\bwhat about\b|\binstead\b|\bis there\b[^.?!]{0,24}\b(?:that|this|next) week\b|\bpush (?:it|this) (?:to|out|back)\b/i
+const NO_REBOOK =
+  /\bno need to (?:find|rebook|reschedul\w*|set up|book)\b|\bwe can (?:pick|catch) (?:it|this|that) up\b|\bnext (?:week|time) is fine\b|\bdon'?t need to (?:rebook|reschedul\w*)\b/i
+
+/**
+ * Words that make a message worth someone's attention even when it is phrased
+ * as a plain FYI with no question in it.
+ *
+ * This exists to keep messages out of stay_out, which is the only outcome in
+ * the whole system where nobody hears about a client at all. It is deliberately
+ * over-broad: a false hit here costs one person one glance, and a miss costs a
+ * client a silently discarded defect report.
+ */
+const SUBSTANTIVE =
+  /\b(?:not|isn'?t|aren'?t|wasn'?t|weren'?t|won'?t|doesn'?t|didn'?t|can'?t|cannot|never|wrong|broken|error|errors|fail|fails|failing|failed|missing|duplicate|twice|stuck|weird|odd|strange|off|refund|refunds|refunded|charge|charged|chargeback|payment|payments|invoice|billing|scope|approved|approve|sign(?:ed)? off|dispute|disputed|escalat\w*|urgent|asap|blocked|blocker)\b/i
+
+/**
+ * Wording that forfeits autonomy even when nothing forced a silent divert.
+ *
+ * Widening recognition raised the price of a detection miss. Before, a legal
+ * message the pre-filter did not catch simply got an over-cautious hand-off,
+ * which cost nothing. Now the safe half of a mixed message gets acted on, so
+ * the same miss fires a booking link at somebody whose counsel is asking how
+ * the checkout stores card data. That happened: "no rush at all but legal
+ * flagged something about how the checkout stores card data. can we get time
+ * this week" auto-sent a calendar link, because LEGAL_ADVERSARIAL wants
+ * "legal action" and this said "legal flagged".
+ *
+ * So the action side gets its own floor, independent of the forced filter.
+ * Escalation is unaffected: a person still sees every one of these. The rule
+ * is only that Max does not DO anything while they are in the message.
+ *
+ * Any time recognition is widened, something like this has to widen with it.
+ */
+const NO_AUTONOMY =
+  /\blegal\b|\bcounsel\b|\bgeneral counsel\b|\bindemnit\w*|\bliabilit\w*|\bmsa\b|\bsow\b|\bamendment\b|\bterminat\w*|\bcontract\b|\bnotary\b|\binsurance\b|\bmember id\b|\blicen[sc]e number\b|\bsocial security\b|\bdob\b|\bnda\b/i
+
+const INTENT_CUES: Array<{ intent: LinkIntent; why: string; cues: RegExp[] }> = [
   {
     intent: 'cancel',
-    pattern: new RegExp(
-      `\\bcancel\\b\\s+(?:${DET})?\\s*(?:(?:${QUAL})\\s+)?(?:${OURS})\\b|\\bcancel\\b\\s+(?:on\\s+)?(?:${DAY})\\b|\\bcancel\\b\\s*$`,
-      'i'
-    ),
+    why: 'the client is calling off a scheduled conversation',
+    cues: [
+      // "cancel" needs an object that is OURS, or no object at all. A bare
+      // \bcancel\b read "had to cancel my dentist appointment tomorrow so my
+      // morning is wide open" as a request to cancel a call with us, which is
+      // the exact class of bug the narrow patterns existed to prevent. Widening
+      // recognition is not licence to drop the object constraint.
+      new RegExp(
+        `\\bcancel(?:l?ing|l?ed|s)?\\b\\s+(?:${DET}\\s+)?(?:(?:${QUAL})\\s+)?(?:${MEET})\\b`,
+        'i'
+      ),
+      new RegExp(`\\bcancel(?:l?ing|l?ed|s)?\\b\\s+(?:on\\s+)?(?:${DAY})\\b`, 'i'),
+      /\bcancel(?:l?ing|l?ed|s)?\b\s+(?:it|this|that|us)\b/i,
+      /\bcancel(?:l?ing|l?ed|s)?\b\s*(?:[.!?]|$)/i,
+      new RegExp(
+        `\\b(?:skip|drop|kill|scrap|call off|bail on|pass on)\\b\\s+(?:${DET}\\s+)?(?:(?:${QUAL})\\s+)?(?:${MEET}|${DAY})\\b`,
+        'i'
+      ),
+      new RegExp(
+        `\\b(?:can'?t|cannot|can not|unable to|won'?t be able to|not able to|not gonna|not going to)\\b[^.?!]{0,16}\\b(?:make|do|attend|join|be (?:on|there|at)|swing)\\b`,
+        'i'
+      ),
+      /\bhave to (?:bail|drop|miss|cancel|skip|postpone)\b/i,
+      /\b(?:something came up|out sick|i'?m sick|im sick|under the weather)\b/i,
+    ],
+  },
+  {
+    intent: 'reschedule',
+    why: 'the client is asking to move a conversation that is already on the calendar',
+    cues: [
+      new RegExp(
+        `\\b(?:move|push|shift|bump|slide|swap|switch|change)\\b\\s+(?:${DET}\\s+)?(?:(?:${QUAL})\\s+)?(?:${MEET})\\b`,
+        'i'
+      ),
+      // Same object constraint as cancel: "I need to reschedule my dentist
+      // appointment before our call" is not a request to move anything of ours.
+      new RegExp(`\\bresched\\w*\\b(?!\\s+(?:my|our|their|the|a|an)\\s+(?!${MEET})\\w+)`, 'i'),
+      new RegExp(`\\b(?:move|push|bump|shift)\\s+(?:it|this|that|us)\\b[^.?!]{0,18}\\b(?:${DAY}|back|out|later|earlier|forward)\\b`, 'i'),
+      /\b(?:another|a different|some other|a new)\s+(?:day|time|slot|date)\b/i,
+      /\b(?:later|earlier)\s+(?:in the day|that day|today|tomorrow|on)\b/i,
+      /\bcan it be\b[^.?!]{0,22}\b(?:later|earlier|instead|\d)/i,
+      /\b(?:do|make it)\s+\d{1,2}(?::\d{2})?\s*(?:am|pm)?\b[^.?!]{0,18}\binstead\b/i,
+      new RegExp(`\\bmove\\s+(?:${DET}\\s+)?(?:${DAY})\\b`, 'i'),
+    ],
   },
   {
     intent: 'book',
-    pattern: new RegExp(
-      `\\b(?:book|schedule|set up|get on|grab)\\b\\s+(?:${DET})?\\s*(?:(?:${QUAL})\\s+)?(?:${OURS}|time|calendar|slot)\\b|\\b(?:hop|jump|get) on a (?:call|zoom)\\b|\\bcalendar link\\b|\\bwhen (?:can|could) (?:we|i) (?:talk|meet|chat)\\b`,
-      'i'
-    ),
+    why: 'the client is asking for time on the calendar',
+    cues: [
+      // an explicit scheduling verb with its object close behind
+      new RegExp(
+        `\\b(?:book|schedule|set ?up|arrange|line up|pencil|slot|lock in|throw|put|find|grab|get)\\b(?:\\s+\\w+){0,3}\\s+(?:${MEET}|time|calendar|slot)\\b`,
+        'i'
+      ),
+      // availability, asked as a question about the other side
+      /\b(?:when|what times?|what days?)\b[^.?!]{0,20}\b(?:are|is|r)\b[^.?!]{0,14}\b(?:free|available|around|open|good)\b/i,
+      /\bwhen(?:'?s| is| are)\b[^.?!]{0,16}\b(?:you|u|avery|your team|yall|y'all)\b/i,
+      /\b(?:your|the)\s+(?:calendar|schedule|availability)\b[^.?!]{0,20}\b(?:look|like|open|free)\b/i,
+      /\bany\s+(?:availability|openings?|free time|slots?|time)\b/i,
+      // a duration, offered or asked for
+      new RegExp(`\\b(?:got|have|you got|do you have|free for|spare)\\b(?:\\s+\\w+){0,2}\\s+(?:${DUR})`, 'i'),
+      new RegExp(`\\b(?:${DUR})\\b[^.?!]{0,18}\\b(?:${DAY})\\b`, 'i'),
+      // proposing a conversation
+      /\b(?:can|could|shall|should|any chance)\b[^.?!]{0,22}\b(?:we|i|you)\b[^.?!]{0,18}\b(?:talk|meet|chat|connect|sync|speak|catch up|hop on|jump on|get on)\b/i,
+      /\b(?:let'?s|lets|wanna|want to|would like to|i'?d like to|id like to)\b[^.?!]{0,22}\b(?:talk|meet|chat|connect|sync|catch up|find time|grab time|get time)\b/i,
+      new RegExp(`\\b(?:free|available|around|open)\\b[^.?!]{0,20}\\b(?:${DAY})\\b`, 'i'),
+      /\b(?:hop|jump|get) on a\b/i,
+      /\bon (?:my|your|the|his|her) calendar\b/i,
+      /\bcalendar link\b/i,
+      /\bon the books\b/i,
+    ],
   },
   {
     intent: 'request',
     // The client has to be ASKING for the form. "The project form is done,
     // sending it back today" was answered by sending them the blank form.
-    pattern:
-      /\b(?:send|share|link|where|need|get|have|is there|point me)\b[^.?!]{0,30}\b(?:request|intake|project|change)\s+(?:request\s+)?form\b|\b(?:request|intake|project|change)\s+(?:request\s+)?form\s+(?:link|please)\b|\bwhere do i submit\b|\bhow do i (?:submit|file|put in) (?:a )?(?:request|ticket)\b/i,
+    why: 'the client is asking where to submit something they already have access to',
+    cues: [
+      /\b(?:send|share|link|where|need|get|have|is there|point me)\b[^.?!]{0,30}\b(?:request|intake|project|change)\s+(?:request\s+)?form\b/i,
+      /\b(?:request|intake|project|change)\s+(?:request\s+)?form\s+(?:link|please)\b/i,
+      /\bwhere do i submit\b/i,
+      /\bhow do i (?:submit|file|put in|raise|open) (?:a )?(?:request|ticket|change)\b/i,
+    ],
   },
 ]
 
@@ -314,7 +454,12 @@ const STATUS_UPDATE =
 // up" pasted onto everything is what makes an assistant feel like a machine.
 const PROCESS_RULES: Array<{ pattern: RegExp; reply: string; reasoning: string }> = [
   {
-    pattern: /\b(?:did you (?:get|receive)|have you (?:got|received)|did .{0,25}(?:come through|go through|land))\b/i,
+    // The subject has to be a THING that arrives. "did we ever land on the
+    // abandoned cart email" is asking whether a decision was ever made, and it
+    // was answered "yes, that came through on our end", which is both false and
+    // exactly the kind of confident nonsense this system exists to prevent.
+    pattern:
+      /\b(?:did you (?:get|receive)|have you (?:got|received))\b|\bdid\s+(?:it|that|this|the|my|our)\b[^.?!]{0,20}\b(?:come through|go through|land)\b(?!\s+on\b)/i,
     reply: 'Yes, that came through on our end. Your account lead will take a look and follow up.',
     reasoning: 'a receipt confirmation, with nothing substantive riding on it',
   },
@@ -352,24 +497,51 @@ const PROCESS_RULES: Array<{ pattern: RegExp; reply: string; reasoning: string }
   },
 ]
 
-// An additive clause means there is a second thing in the message.
-const ADDITIVE = /\b(?:also|plus|one more thing|another thing|by the way|btw|as well as that|on top of that)\b/i
-
-// A bare greeting is not a second thought, so it must not make a message "mixed".
-const GREETING = /^(?:hi|hey|hello|good morning|good afternoon|morning|afternoon|yo|hiya)[\s,!-]*$/i
+// The client says they will handle the rebooking themselves. That does not make
+// the message unsafe, it makes the LINK unwanted: cancel it, tell a person, and
+// do not talk over them with a calendar link they just said they did not need.
+const SELF_HANDLED_ACK =
+  'Got it, that is cancelled. Send those times over whenever you have them and we will get it back on the calendar.'
 
 /**
- * Is the transactional ask the entire message? Anything else in there means the
- * assistant should hand it to a person rather than fire a link at it.
+ * The first sensitive category present, or null.
+ *
+ * Split out of the decision so that BOTH halves of a message can be read before
+ * either one decides anything.
  */
-function askIsWholeMessage(text: string): boolean {
-  if (ADDITIVE.test(text)) return false
-  const sentences = text
-    .split(/[.!?]+/)
-    .map((s) => s.trim())
-    .filter(Boolean)
-    .filter((s) => !GREETING.test(s))
-  return sentences.length <= 1
+function findSensitive(text: string) {
+  for (const rule of SENSITIVE_RULES) {
+    const m = rule.pattern.exec(text)
+    if (!m) continue
+    // "nothing is broken on our end" is not an outage report.
+    if (standsDown(text, m.index, m[0], 'sensitive') || HYPOTHETICAL.test(text)) continue
+    return rule
+  }
+  return null
+}
+
+/**
+ * What the client is asking us to DO, or null.
+ *
+ * Every cue passes the stand-down gate individually, so "do NOT cancel thursday"
+ * and "if we ever need to move this" still resolve to nothing.
+ */
+function findIntent(text: string): { intent: LinkIntent; why: string } | null {
+  for (const group of INTENT_CUES) {
+    for (const cue of group.cues) {
+      const m = cue.exec(text)
+      if (!m) continue
+      if (standsDown(text, m.index, m[0], 'action') || HYPOTHETICAL.test(text)) continue
+      // "cant do thursday anymore, is there another day that week" is a move,
+      // not a cancellation. The inability is identical; the ask is not.
+      const intent =
+        group.intent === 'cancel' && REBOOK_CUE.test(text) && !NO_REBOOK.test(text)
+          ? 'reschedule'
+          : group.intent
+      return { intent, why: group.why }
+    }
+  }
+  return null
 }
 
 /**
@@ -383,6 +555,7 @@ export function simulateModel(redactedMessage: string): ReplyDecision {
     replyText: null,
     sensitivityCategory: null,
     needsSilent: false,
+    notify: null,
     degraded: null,
   }
 
@@ -390,69 +563,69 @@ export function simulateModel(redactedMessage: string): ReplyDecision {
     return { ...base, action: 'stay_out', reasoning: 'empty message' }
   }
 
-  // Always-divert categories outrank everything in the safe zone, including a
-  // transactional ask sitting in the same sentence.
-  for (const rule of SENSITIVE_RULES) {
-    const m = rule.pattern.exec(text)
-    if (!m) continue
-    // "nothing is broken on our end" is not an outage report, and answering it
-    // with "thanks for flagging that, I have pulled your lead in" is a reply
-    // the client can see is wrong. Keep looking rather than firing this rule.
-    if (standsDown(text, m.index, m[0]) || HYPOTHETICAL.test(text)) continue
-    return {
-      ...base,
-      action: 'divert_sensitive',
-      sensitivityCategory: rule.category,
-      needsSilent: false,
-      reasoning: rule.reasoning,
-    }
-  }
+  // BOTH halves are read before either decides. The old order returned on the
+  // first sensitive hit, so "can we get time on the calendar? the staging build
+  // is erroring out" lost the booking entirely: an unsafe TOPIC suppressed a
+  // safe ACTION that merely shared a paragraph with it.
+  const sensitive = findSensitive(text)
+  // The floor: recognise the ask, then refuse to act on it.
+  const ask = NO_AUTONOMY.test(text) ? null : findIntent(text)
 
-  const hit = TRANSACTIONAL.map((t) => ({ t, m: t.pattern.exec(text) })).find((x) => x.m)
-  if (hit && hit.m) {
-    // "Do not cancel Thursday" contains the word cancel and means the
-    // opposite. Never act on a negated, retracted or third-party request.
-    if (standsDown(text, hit.m.index, hit.m[0])) {
-      return {
-        ...base,
-        action: 'divert_borderline',
-        reasoning: 'the client is not asking us to do that, so there is nothing here to act on',
-      }
-    }
-    // A question ABOUT cancelling is not a cancellation.
-    if (HYPOTHETICAL.test(text)) {
-      return {
-        ...base,
-        action: 'divert_borderline',
-        reasoning: 'the client is asking about a what-if, not asking us to do it now',
-      }
-    }
-    // MIXED MESSAGES ARE THE TRAP. A transactional word plus the client saying
-    // they will handle the next step is not a clean safe-zone reply.
+  // Lane B. The message carries work Max may do AND something a person has to
+  // see, so it gets both instead of being filed under one of them.
+  if (ask && sensitive) {
     if (SELF_HANDLING.test(text)) {
       return {
         ...base,
-        action: 'divert_borderline',
-        replyText: 'Got it, I have let Avery know. Send those times over whenever you have them.',
-        reasoning: 'a mixed message: a transactional ask plus the client handling the next step themselves',
-      }
-    }
-    // A request is clean ONLY when that ask IS the whole message. Counting
-    // question marks was not enough: "Cancel tomorrow. I'll rebook later"
-    // carries a second ask and no second '?'.
-    if (!askIsWholeMessage(text)) {
-      return {
-        ...base,
-        action: 'divert_borderline',
-        reasoning: 'the message carries more than the ask, so it is not a clean single-intent request',
+        action: 'reply',
+        replyText: SELF_HANDLED_ACK,
+        notify: sensitive.reasoning,
+        reasoning: 'the client handles the next step, so no link, and a person is pinged for the rest',
       }
     }
     return {
       ...base,
       action: 'reply',
-      linkIntent: hit.t.intent,
-      reasoning: `clean ${hit.t.intent} request, the whole message is the ask`,
+      linkIntent: ask.intent,
+      // Carried so the review card can tell the truth about what is left. The
+      // safe half is done; the other half is still somebody's problem, and a
+      // card that says "no action needed" over an unhandled outage is the kind
+      // of small lie that costs the whole system its credibility.
+      sensitivityCategory: sensitive.category,
+      notify: sensitive.reasoning,
+      reasoning: `${ask.why}, and there is something else here a person has to see`,
     }
+  }
+
+  if (sensitive) {
+    return {
+      ...base,
+      action: 'divert_sensitive',
+      sensitivityCategory: sensitive.category,
+      needsSilent: false,
+      reasoning: sensitive.reasoning,
+    }
+  }
+
+  if (ask) {
+    // A cancellation is safe to action and is also the loudest health signal a
+    // client ever sends. Do it, and say so internally. Notifying is not the
+    // same as needing approval, and conflating the two is what made this
+    // assistant hand back every cancellation it was perfectly able to handle.
+    const notify =
+      ask.intent === 'cancel'
+        ? 'the client cancelled, which is worth knowing even though it is already handled'
+        : null
+    if (SELF_HANDLING.test(text)) {
+      return {
+        ...base,
+        action: 'reply',
+        replyText: SELF_HANDLED_ACK,
+        notify: notify ?? 'the client is handling the next step themselves',
+        reasoning: 'the client is rebooking themselves, so it is acknowledged without a link',
+      }
+    }
+    return { ...base, action: 'reply', linkIntent: ask.intent, notify, reasoning: ask.why }
   }
 
   if (GRATITUDE.test(text)) {
@@ -466,12 +639,20 @@ export function simulateModel(redactedMessage: string): ReplyDecision {
     // "Did the deck not come through? I do not see it anywhere" was answered
     // with "yes, that came through on our end", which is simply false. Here the
     // negation inside the matched span counts, unlike everywhere else.
-    if (NEGATION.test(m[0]) || standsDown(text, m.index, m[0]) || HYPOTHETICAL.test(text)) continue
+    if (NEGATION.test(m[0]) || standsDown(text, m.index, m[0], 'sensitive') || HYPOTHETICAL.test(text)) continue
     return { ...base, action: 'reply', replyText: rule.reply, reasoning: rule.reasoning }
   }
 
-  if (STATUS_UPDATE.test(text) && !ASK_CUE.test(text)) {
-    return { ...base, action: 'stay_out', reasoning: 'client is informing us, no reply or human action needed' }
+  // Standing out is the only outcome where NOBODY hears about a client, so it
+  // has to be a positive finding rather than a fallthrough.
+  //
+  // It was a fallthrough. "refunds issued in the admin aren't showing as
+  // refunded on the customer's order page" matched STATUS_UPDATE, carried no
+  // question mark, and was discarded: no reply, no card, nobody told. Two live
+  // payment defects and a scope dispute went that way in one 402-message run.
+  // An update now has to be inert in its own words to qualify.
+  if (STATUS_UPDATE.test(text) && !ASK_CUE.test(text) && !SUBSTANTIVE.test(text)) {
+    return { ...base, action: 'stay_out', reasoning: 'client is informing us and nothing in it needs anyone' }
   }
 
   // When in doubt between reply and divert_borderline, choose divert_borderline.
@@ -498,7 +679,10 @@ export function simulateModel(redactedMessage: string): ReplyDecision {
  */
 export function legacyClassify(message: string): LinkIntent | 'gratitude' | 'update' | 'other' {
   const text = message.trim()
-  const hit = TRANSACTIONAL.find((t) => t.pattern.test(text))
+  // Reads the same cues, with none of the gates: no stand-down, no clause
+  // scoping, no second intent. One label for the whole message, which is
+  // exactly the failure being illustrated.
+  const hit = INTENT_CUES.find((g) => g.cues.some((c) => c.test(text)))
   if (hit) return hit.intent
   if (GRATITUDE.test(text)) return 'gratitude'
   if (STATUS_UPDATE.test(text)) return 'update'

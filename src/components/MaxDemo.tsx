@@ -103,6 +103,9 @@ export function MaxDemo() {
 
       // A sensitive divert produces an escalation bridge, not a draft card.
       const isEscalation = run.status === "awaiting_human";
+      // Lane B: Max handled it AND this one is worth an @mention rather than a
+      // log line somebody reads later. Being told is not being asked to approve.
+      const isNotice = run.status === "auto_sent" && Boolean(run.plan.notify);
       const needsCard =
         run.status === "pending" ||
         run.status === "blocked" ||
@@ -114,7 +117,13 @@ export function MaxDemo() {
           ...prev,
           {
             id: nextId("c"),
-            kind: isEscalation ? "escalation" : run.status === "auto_sent" ? "fyi" : "draft",
+            kind: isEscalation
+              ? "escalation"
+              : isNotice
+                ? "notice"
+                : run.status === "auto_sent"
+                  ? "fyi"
+                  : "draft",
             clientMessage: run.redactedMessage,
             clientName: isEscalation ? `#${CLIENT.company.toLowerCase().replace(/\s+/g, "-")}` : CLIENT.fullName,
             // A template blocked by the outbound re-check carries its text on
@@ -122,12 +131,12 @@ export function MaxDemo() {
             draftText: run.outboundText ?? run.plan.replyText ?? null,
             status: run.status,
             flags: run.plan.flags,
-            reasoning: run.plan.reasoning,
+            reasoning: isNotice ? run.plan.notify! : run.plan.reasoning,
             category: run.plan.sensitivityCategory ?? null,
             needsSilent: run.plan.needsSilent ?? false,
             sendable: run.status === "pending",
             at: t + 10,
-            mention: isEscalation ? ADVISOR.mention : undefined,
+            mention: isEscalation || isNotice ? ADVISOR.mention : undefined,
           },
         ]);
       }

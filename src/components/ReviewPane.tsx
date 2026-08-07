@@ -28,6 +28,7 @@ const TONE_BAR = {
 
 function toneFor(card: ReviewCard) {
   if (card.kind === "escalation") return card.acknowledged ? "live" : "block";
+  if (card.kind === "notice") return "hold";
   if (card.kind === "scorecard") return "muted";
   return STATUS_LABEL[card.status]?.tone ?? "muted";
 }
@@ -157,7 +158,39 @@ export function ReviewPane({
                 <div className="min-w-0 flex-1 border border-l-0 border-border-light">
                   <AppHeader at={card.at} />
 
-                  {card.kind === "scorecard" && card.scorecard ? (
+                  {card.kind === "notice" ? (
+                    /* Lane B. Max already answered the client; this exists so
+                       the account lead learns about it now rather than reading
+                       a log later. The distinction between "you should know"
+                       and "you must approve" is the whole point of the card. */
+                    <div className="px-3.5 pb-3.5 pt-2">
+                      <p className="font-sans text-[14px] leading-snug text-text">
+                        <span className="rounded-[3px] bg-link/10 px-1 font-bold text-link">
+                          {card.mention}
+                        </span>{" "}
+                        {card.category ? "handled the scheduling. The rest is yours." : "handled, but you should know."}{" "}
+                        <span className="text-text-secondary">{card.reasoning}</span>
+                      </p>
+                      <p className="mt-2 border-l-2 border-border pl-2.5 font-sans text-[13.5px] leading-relaxed text-text-secondary">
+                        {card.clientMessage}
+                      </p>
+                      {card.draftText && (
+                        <>
+                          <div className="mt-3">
+                            <Label>Already sent to the client</Label>
+                          </div>
+                          <p className="mt-1 border-l-2 border-border pl-2.5 font-sans text-[13.5px] leading-relaxed text-text">
+                            {renderMrkdwn(card.draftText)}
+                          </p>
+                        </>
+                      )}
+                      <p className="mt-2.5 font-sans text-[12.5px] leading-snug text-text-muted">
+                        {card.category
+                          ? "Max answered only the part it was allowed to. Nobody has replied to the rest."
+                          : "No action needed. Nothing here is waiting on you."}
+                      </p>
+                    </div>
+                  ) : card.kind === "scorecard" && card.scorecard ? (
                     <ScorecardBody s={card.scorecard} />
                   ) : card.kind === "escalation" ? (
                     <div className="px-3.5 pb-3.5 pt-2">

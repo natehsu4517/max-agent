@@ -19,6 +19,19 @@ export interface ReplyDecision {
   sensitivityCategory: SensitivityCategory | null
   needsSilent: boolean
   reasoning: string
+  /**
+   * Act AND tell a person, in one move. Non-null is the reason for the ping.
+   *
+   * The lane that was missing. Without it every message resolved to "Max handles
+   * it" or "a person handles it", so a cancellation, which is safe to action and
+   * is also the loudest health signal a client ever sends, had to be filed under
+   * one or the other. Filing it under "a person handles it" is what made the
+   * assistant feel useless; filing it under "Max handles it" loses the signal.
+   *
+   * A ping is not the FYI card every auto-send already writes. This carries an
+   * @mention: notification, not a log entry somebody may read later.
+   */
+  notify: string | null
   /** Why the decision fell back without a clean model call (null = clean run). */
   degraded: string | null
 }
@@ -33,6 +46,8 @@ export interface DispatchPlan {
   sensitivityCategory?: SensitivityCategory
   /** divert_sensitive with no client-facing ack (pii / legal): alert the human only. */
   needsSilent?: boolean
+  /** Reply to the client AND ping a person. See ReplyDecision.notify. */
+  notify?: string | null
   /** Audit trail: pre-filter hits, compliance flags, downgrade reasons. */
   flags: string[]
   reasoning: string
@@ -115,8 +130,14 @@ export interface ChatMessage {
   replies?: ChatMessage[]
 }
 
-/** What kind of thing landed in the internal review channel. */
-export type CardKind = 'draft' | 'escalation' | 'fyi' | 'scorecard'
+/**
+ * What kind of thing landed in the internal review channel.
+ *
+ * 'fyi' is a log line for something Max handled: no ping, read it whenever.
+ * 'notice' is the lane-B card: Max handled it AND this one is worth your
+ * attention now, so it carries an @mention like an escalation does.
+ */
+export type CardKind = 'draft' | 'escalation' | 'fyi' | 'notice' | 'scorecard'
 
 export interface ReviewCard {
   id: string

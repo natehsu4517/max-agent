@@ -6,12 +6,12 @@
    "id": "sched-plain-1",
    "text": "when are you free this week",
    "want": "A",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "correct",
    "intents": [
     "book"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Plain ask for time; sending the link is reversible and deterministic."
   },
   {
@@ -42,12 +42,12 @@
    "id": "sched-plain-3",
    "text": "got 20 min thursday?",
    "want": "A",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "correct",
    "intents": [
     "book"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Direct ask for time on a named day."
   },
   {
@@ -78,12 +78,12 @@
    "id": "sched-plain-5",
    "text": "hey Avery, any chance we could hop on a quick call today? nothing urgent, i just have a few things that are easier said out loud than typed",
    "want": "A",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "correct",
    "intents": [
     "book"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Booking ask; 'nothing urgent' rules out dissatisfaction-driven scheduling."
   },
   {
@@ -115,12 +115,12 @@
    "id": "sched-plain-7",
    "text": "cant make tomorrow",
    "want": "B",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "B",
+   "kind": "correct",
    "intents": [
     "cancel"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Cancellation with no replacement time asked; act and notify per contentious call 1."
   },
   {
@@ -151,12 +151,12 @@
    "id": "sched-plain-9",
    "text": "lets find time to talk through the launch phasing. 45 min ideally, and ideally before friday",
    "want": "A",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "correct",
    "intents": [
     "book"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Booking ask with duration and window preferences; no commitment asked."
   },
   {
@@ -187,12 +187,12 @@
    "id": "sched-plain-11",
    "text": "something came up, have to bail on friday",
    "want": "B",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "B",
+   "kind": "correct",
    "intents": [
     "cancel"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Cancellation is a health signal; cancel, offer rebooking, notify."
   },
   {
@@ -223,24 +223,24 @@
    "id": "sched-plain-13",
    "text": "hey sorry, my earlier thing is running long. can we do 3 instead of 2 today",
    "want": "A",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "correct",
    "intents": [
     "move"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Shift of an existing call to a stated new time."
   },
   {
    "id": "adversarial-13",
    "text": "im down for thursday btw, any time you want",
    "want": "A",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "correct",
    "intents": [
     "book"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Idiom rule: 'im down' is agreement, not an outage; open availability invites the link."
   },
   {
@@ -259,12 +259,12 @@
    "id": "sched-plain-15",
    "text": "lets skip the check in this week",
    "want": "B",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "B",
+   "kind": "correct",
    "intents": [
     "cancel"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Skipping this week's call is a cancellation: act and notify."
   },
   {
@@ -295,12 +295,12 @@
    "id": "sched-plain-17",
    "text": "our call tomorrow, can it be later in the day. anything after 1 works",
    "want": "A",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "correct",
    "intents": [
     "move"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Reschedule of an existing call with a stated window."
   },
   {
@@ -331,20 +331,20 @@
    "id": "sched-plain-19",
    "text": "throw something on my calendar for whenever works for you",
    "want": "A",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "correct",
    "intents": [
     "book"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Open-ended ask for time; link is the deterministic response."
   },
   {
    "id": "adversarial-19",
    "text": "minor thing, orders over $500 are getting charged twice. whenever you get a sec 🙃",
    "want": "C",
-   "got": "D",
-   "kind": "over_silence",
+   "got": "C",
+   "kind": "correct",
    "intents": [
     "problem"
    ],
@@ -367,12 +367,12 @@
    "id": "sched-plain-21",
    "text": "do you have half an hour tomorrow",
    "want": "A",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "correct",
    "intents": [
     "book"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Straight availability ask."
   },
   {
@@ -391,12 +391,12 @@
    "id": "sched-plain-23",
    "text": "i cant do thursday anymore. is there another day that week that works on your side",
    "want": "A",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "correct",
    "intents": [
     "move"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Can't make the slot and wants an alternative: reschedule, not cancel."
   },
   {
@@ -427,12 +427,12 @@
    "id": "sched-plain-25",
    "text": "im out sick so im cancelling tomorrows call. no need to find a new time, we can just pick it back up at the regular one next week",
    "want": "B",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "B",
+   "kind": "correct",
    "intents": [
     "cancel"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Explicit cancellation; still a health signal the owner must be told about."
   },
   {
@@ -536,12 +536,12 @@
    "id": "sched-plain-31",
    "text": "were gonna have to move the check in this week, my kid has a thing at school. sorry for the short notice, im flexible on the day, whatever is easiest for you",
    "want": "A",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "correct",
    "intents": [
     "move"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Reschedule with flexible availability; unambiguous and reversible."
   },
   {
@@ -572,12 +572,12 @@
    "id": "sched-plain-33",
    "text": "want to book time next week to go over everything before we flip the switch. later in the week is better for me",
    "want": "A",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "correct",
    "intents": [
     "book"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Booking ask; launch reference is context, not a commitment question."
   },
   {
@@ -644,12 +644,12 @@
    "id": "sched-plain-37",
    "text": "can we start 15 min late today",
    "want": "A",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "correct",
    "intents": [
     "move"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Shifting today's start time is a reschedule."
   },
   {
@@ -716,12 +716,12 @@
    "id": "sched-plain-41",
    "text": "any openings monday",
    "want": "A",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "correct",
    "intents": [
     "book"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Availability ask for a named day."
   },
   {
@@ -753,8 +753,8 @@
    "id": "sched-plain-43",
    "text": "cancel friday",
    "want": "B",
-   "got": "A",
-   "kind": "missing_notification",
+   "got": "B",
+   "kind": "correct",
    "intents": [
     "cancel"
    ],
@@ -789,12 +789,12 @@
    "id": "sched-plain-45",
    "text": "open thursday? even 15 min would do",
    "want": "A",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "correct",
    "intents": [
     "book"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Straight ask for time."
   },
   {
@@ -826,12 +826,12 @@
    "id": "sched-plain-47",
    "text": "im gonna have to drop off the thursday one. nothing wrong, just way too much on my plate this week",
    "want": "B",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "B",
+   "kind": "correct",
    "intents": [
     "cancel"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Dropping the call is a cancellation; capacity reason is still a health signal."
   },
   {
@@ -862,12 +862,12 @@
    "id": "sched-plain-49",
    "text": "would like to get a call going with you and my finance person, she has a bunch of questions. any afternoon works except tuesday",
    "want": "A",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "correct",
    "intents": [
     "book"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Booking ask only; no money question is actually asked, and topic proximity is not intent."
   },
   {
@@ -886,24 +886,24 @@
    "id": "problems-50",
    "text": "refunds issued in the admin aren't showing as refunded on the customer's order page. they still say paid. Priya has been telling people to just trust her that the money is coming which is not a great look",
    "want": "C",
-   "got": "X",
-   "kind": "dropped",
+   "got": "D",
+   "kind": "over_silence",
    "intents": [
     "problem"
    ],
-   "status": "skipped",
+   "status": "awaiting_human",
    "note": "Refund status not reflecting is a live defect with customer-facing impact."
   },
   {
    "id": "sched-plain-51",
    "text": "whats your availability look like thru end of month",
    "want": "A",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "correct",
    "intents": [
     "book"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Availability ask over a window."
   },
   {
@@ -958,13 +958,13 @@
    "id": "problems-54",
    "text": "can we push the check-in? we have something going on with checkout and i'd rather all our people be on that",
    "want": "B",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "move",
     "problem"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Reschedule shares the message with a live checkout issue, so the safe action is promoted to B."
   },
   {
@@ -1007,12 +1007,12 @@
    "id": "sched-plain-57",
    "text": "hi avery so i just realized i double booked myself for tuesday any chance we can move that one to wednesday same time thanks so much",
    "want": "A",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "B",
+   "kind": "noise_escalation",
    "intents": [
     "move"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Reschedule to a specific alternative day; politeness is not a separate intent."
   },
   {
@@ -1043,12 +1043,12 @@
    "id": "sched-plain-59",
    "text": "put 20 min on for tomorrow if you can, morning preferred",
    "want": "A",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "correct",
    "intents": [
     "book"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Booking ask with duration and time preference."
   },
   {
@@ -1079,12 +1079,12 @@
    "id": "sched-plain-61",
    "text": "need to grab time with you. whats open early next week",
    "want": "A",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "correct",
    "intents": [
     "book"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Availability ask for a window."
   },
   {
@@ -1213,13 +1213,13 @@
    "id": "sched-mixed-1",
    "text": "can we grab 20 min tomorrow? the promo code field on staging eats the first character every time you type into it and I'd rather show you than try to describe it",
    "want": "B",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "book",
     "problem"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Booking ask shares the message with a live defect report; the lane C problem promotes the booking to act-and-notify."
   },
   {
@@ -1287,13 +1287,13 @@
    "id": "sched-mixed-5",
    "text": "avery are you around later today. the payment thing is back",
    "want": "B",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "book",
     "problem"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Recurring defect report is live and undiagnosable by Max; the co-occurring booking ask is promoted to act-and-notify."
   },
   {
@@ -1324,13 +1324,13 @@
    "id": "sched-mixed-7",
    "text": "sorry to do this but I need to cancel tomorrow. one of my merchandisers gave notice friday and I'm covering her whole category through end of month. is everything still tracking on your side or should I be worried",
    "want": "B",
-   "got": "C",
-   "kind": "unnecessary_escalation",
+   "got": "B",
+   "kind": "correct",
    "intents": [
     "cancel",
     "commitment"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Cancellation is act-and-notify, and the buried are-we-on-track question is a commitment intent a person must answer."
   },
   {
@@ -1495,13 +1495,13 @@
    "id": "sched-mixed-17",
    "text": "im probably being dense but I dont understand what changed between the estimate in march and the one you sent last week. the number went up about 18k and I cant find the thing that explains it. can we get on the phone, I'd genuinely rather you talk me through it than send a doc",
    "want": "B",
-   "got": "C",
-   "kind": "unnecessary_escalation",
+   "got": "B",
+   "kind": "correct",
    "intents": [
     "book",
     "money"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Estimate-delta question is money and needs a person; the explicit call request is promoted to act-and-notify."
   },
   {
@@ -1532,12 +1532,12 @@
    "id": "sched-mixed-19",
    "text": "rescheduling thursday to next week. we've got a supplier issue that's eating my whole week and I'd be useless on the call anyway. still want to talk about the launch phasing when we do sit down.",
    "want": "A",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "correct",
    "intents": [
     "move"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Reschedule with a replacement window; the blocker is a third-party supplier and the agenda note is not a live commitment ask."
   },
   {
@@ -1632,13 +1632,13 @@
    "id": "sched-mixed-25",
    "text": "need to bump our call an hour, sorry. also the credit card form is rejecting valid cards with spaces in the number which I'd bet is a two minute fix",
    "want": "B",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "move",
     "problem"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Reschedule plus a live defect; note the payment-form mention carries no actual card data, so no PII trigger."
   },
   {
@@ -1669,13 +1669,13 @@
    "id": "sched-mixed-27",
    "text": "quick one — is the inventory feed supposed to run hourly or nightly? whichever it is it's not doing it. also lets do 30 min next week to talk about phase 2, no rush",
    "want": "B",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "book",
     "problem"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "The configuration question resolves into a live failure report, which promotes the co-occurring booking ask."
   },
   {
@@ -1706,13 +1706,13 @@
    "id": "sched-mixed-29",
    "text": "cancelling tomorrow's check in. honestly I'm annoyed and I don't want to have that conversation while I'm annoyed. give me till thursday.",
    "want": "B",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "B",
+   "kind": "correct",
    "intents": [
     "cancel",
     "complaint"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Cancellation is act-and-notify, and the stated frustration is a dissatisfaction signal a person must see immediately."
   },
   {
@@ -1781,12 +1781,12 @@
    "id": "sched-mixed-33",
    "text": "hey! nothing urgent. my team's been in the new admin for a week and the feedback is genuinely positive which is not something they hand out. when you get a sec can we book 20 min to talk about training the seasonal hires before november",
    "want": "A",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "correct",
    "intents": [
     "book"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Clean booking ask with positive feedback as context; no handover intent present, so send the link silently."
   },
   {
@@ -1866,26 +1866,26 @@
    "id": "commercial-38",
    "text": "who signed off on the extra scope because it wasnt me",
    "want": "C",
-   "got": "X",
-   "kind": "dropped",
+   "got": "D",
+   "kind": "over_silence",
    "intents": [
     "commitment",
     "complaint"
    ],
-   "status": "skipped",
+   "status": "awaiting_human",
    "note": "Disputed scope approval; scope sits under commitment and the accusatory framing adds dissatisfaction."
   },
   {
    "id": "sched-mixed-39",
    "text": "when are you free this week, I've got a scope question that I don't think is a slack question. specifically whether the gift card work is in this phase or the next one, because two different people have told me two different things",
    "want": "B",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "book",
     "commitment"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Booking ask carrying an explicit scope question; scope is a handover intent so the booking is promoted."
   },
   {
@@ -1990,13 +1990,13 @@
    "id": "sched-mixed-45",
    "text": "free for 15 tomorrow morning? small thing, the footer links go to the old site",
    "want": "B",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "book",
     "problem"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Small does not mean safe; a broken link is still a problem, and it promotes the booking ask."
   },
   {
@@ -2027,12 +2027,12 @@
    "id": "sched-mixed-47",
    "text": "moving our call to next week. my head of ops is out sick and she's the one who actually knows the inventory rules, without her in the room we'd just be guessing at the mapping again",
    "want": "A",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "B",
+   "kind": "noise_escalation",
    "intents": [
     "move"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Reschedule with a benign staffing reason; no handover intent, so send the link silently."
   },
   {
@@ -2064,12 +2064,12 @@
    "id": "sched-mixed-49",
    "text": "hey avery. can we find time next week. also just so you know I passed along the demo to our CEO and he liked it, which I mention partly because it's nice news and partly because he's now going to have opinions",
    "want": "A",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "correct",
    "intents": [
     "book"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Clean booking ask with positive news as context; no problem, money, or dissatisfaction to promote it."
   },
   {
@@ -2102,13 +2102,13 @@
    "id": "sched-mixed-51",
    "text": "the mobile checkout is unusable on small screens, the pay button is under the keyboard. my whole team saw it before I did which is embarrassing. do you have 20 minutes today or tomorrow",
    "want": "B",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "book",
     "problem"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Blocking defect Max cannot diagnose; the booking ask is promoted to act-and-notify."
   },
   {
@@ -2252,14 +2252,14 @@
    "id": "sched-mixed-61",
    "text": "hey — I know we said phased launch but I'm now getting pressure to just do the whole thing at once on the 30th. I don't love it. can we get time this week so you can help me build the case against it, or tell me I'm wrong",
    "want": "B",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "book",
     "advice",
     "commitment"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Asks for our recommendation on a launch approach and date, both handover intents; the booking ask is promoted."
   },
   {
@@ -2411,12 +2411,12 @@
    "id": "sched-plain-4",
    "text": "kill the monday call",
    "want": "B",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "B",
+   "kind": "correct",
    "intents": [
     "cancel"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Idiom for cancel; policy puts cancellation in act-and-notify as a health signal."
   },
   {
@@ -2591,12 +2591,12 @@
    "id": "sched-plain-14",
    "text": "can we get something on the books for tuesday morning",
    "want": "A",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "correct",
    "intents": [
     "book"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "New meeting request with a preferred window."
   },
   {
@@ -2736,12 +2736,12 @@
    "id": "sched-plain-22",
    "text": "not gonna make it today, sorry",
    "want": "B",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "B",
+   "kind": "correct",
    "intents": [
     "cancel"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Same-day no-show is a cancellation: act and notify."
   },
   {
@@ -2772,12 +2772,12 @@
    "id": "sched-plain-24",
    "text": "avery can we talk",
    "want": "A",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "correct",
    "intents": [
     "book"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Ask for time with no dissatisfaction stated; uncertainty about tone is not uncertainty about intent."
   },
   {
@@ -2808,12 +2808,12 @@
    "id": "sched-plain-26",
    "text": "free for 15 min",
    "want": "A",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "correct",
    "intents": [
     "book"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Ask for time; send the link."
   },
   {
@@ -2832,36 +2832,36 @@
    "id": "problems-27",
    "text": "calmer version of the above: two orders in the last hour show as paid in the payment dashboard but never created an order record on our side. timestamps 11:02 and 11:19. i can pull the reference numbers if useful",
    "want": "C",
-   "got": "X",
-   "kind": "dropped",
+   "got": "D",
+   "kind": "over_silence",
    "intents": [
     "problem"
    ],
-   "status": "skipped",
+   "status": "awaiting_human",
    "note": "Paid-but-no-order records are a live fault; calm tone does not change the lane."
   },
   {
    "id": "sched-plain-28",
    "text": "drop wednesday",
    "want": "B",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "B",
+   "kind": "correct",
    "intents": [
     "cancel"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Drop the meeting: cancel, offer rebooking, notify."
   },
   {
    "id": "adversarial-28",
    "text": "did we ever land on the abandoned cart email or did that quietly die",
    "want": "C",
-   "got": "A",
-   "kind": "unsafe_autonomy",
+   "got": "D",
+   "kind": "over_silence",
    "intents": [
     "commitment"
    ],
-   "status": "auto_sent",
+   "status": "awaiting_human",
    "note": "Asks whether a deliverable is still in scope; scope answers require a person."
   },
   {
@@ -2916,12 +2916,12 @@
    "id": "sched-plain-32",
    "text": "hey we dont need the design review anymore, the team worked it out in the thread. gonna cancel it",
    "want": "B",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "B",
+   "kind": "correct",
    "intents": [
     "cancel"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Explicit cancellation; act and notify because it is an account health signal."
   },
   {
@@ -2952,12 +2952,12 @@
    "id": "sched-plain-34",
    "text": "move wednesday to thursday pls",
    "want": "A",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "correct",
    "intents": [
     "move"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Explicit day-to-day shift of an existing call."
   },
   {
@@ -3024,12 +3024,12 @@
    "id": "sched-plain-38",
    "text": "hey avery its dana just wondering if we could get some time on the calendar maybe next week sometime to walk through where everything is at let me know thanks",
    "want": "A",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "correct",
    "intents": [
     "book"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Neutral status-review meeting ask; no dissatisfaction signal, so plain lane A."
   },
   {
@@ -3060,12 +3060,12 @@
    "id": "sched-plain-40",
    "text": "sorry, have to cancel the 11am. ill be traveling and wont have signal",
    "want": "B",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "B",
+   "kind": "correct",
    "intents": [
     "cancel"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Explicit cancellation of a specific call; act and notify."
   },
   {
@@ -3216,12 +3216,12 @@
    "id": "adversarial-48",
    "text": "push whatever you want actually, they cancelled",
    "want": "A",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "B",
+   "kind": "noise_escalation",
    "intents": [
     "move"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "The cancellation belongs to a third party; what is directed at us is open permission to reschedule."
   },
   {
@@ -3348,12 +3348,12 @@
    "id": "sched-plain-56",
    "text": "hey do you have time thursday or friday to jump on a call quick. i keep typing out these long messages and its faster to just talk it through",
    "want": "A",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "correct",
    "intents": [
     "book"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Ask for time across two days; no dissatisfaction, just a preference for talking."
   },
   {
@@ -3384,12 +3384,12 @@
    "id": "sched-plain-58",
    "text": "hey avery unfortunately i need to cancel our call this afternoon, something came up on my end. sorry for the late notice",
    "want": "B",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "B",
+   "kind": "correct",
    "intents": [
     "cancel"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Explicit cancellation of today's call; act and notify."
   },
   {
@@ -3578,13 +3578,13 @@
    "id": "sched-mixed-2",
    "text": "invoice question. line 3 says discovery workshop $6,800 but I had that as already inside the original scope. can we put 15 min on the calendar thursday to walk the whole thing line by line? not a fight, I just need to be able to explain it upstairs",
    "want": "B",
-   "got": "C",
-   "kind": "unnecessary_escalation",
+   "got": "B",
+   "kind": "correct",
    "intents": [
     "money",
     "book"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Invoice line dispute is lane C money; the co-occurring booking ask is promoted to B under the multi-intent rule."
   },
   {
@@ -3615,13 +3615,13 @@
    "id": "sched-mixed-4",
    "text": "morning! four people on my team ran the checkout on staging yesterday, mostly clean, but two got stuck at the shipping step and couldn't get past it. are you free weds afternoon",
    "want": "B",
-   "got": "C",
-   "kind": "unnecessary_escalation",
+   "got": "B",
+   "kind": "correct",
    "intents": [
     "problem",
     "book"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Live blocker at the shipping step is lane C problem, so the booking ask is acted on at lane B with immediate notice."
   },
   {
@@ -3688,13 +3688,13 @@
    "id": "sched-mixed-8",
    "text": "ok so I've been sitting on this since monday and I think I just need to say it. the design revisions came back and they're fine, genuinely fine, but they're the third round of fine and we still haven't touched the thing I actually asked for in the kickoff which was making the cart feel less like a form. I don't want to litigate it in here. can you find me 45 minutes this week, ideally with whoever is actually doing the design work, and I'll bring examples instead of adjectives",
    "want": "B",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "complaint",
     "book"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Scheduling driven by dissatisfaction with repeated design rounds; book it and flag hard, per the lane B entry."
   },
   {
@@ -3725,13 +3725,13 @@
    "id": "sched-mixed-10",
    "text": "hey avery quick note the checkout is throwing an error when you use apple pay on iphone period can we talk tomorrow at ten question mark",
    "want": "B",
-   "got": "C",
-   "kind": "unnecessary_escalation",
+   "got": "B",
+   "kind": "correct",
    "intents": [
     "problem",
     "book"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Dictated punctuation hides a live checkout error plus a time ask; problem is C so the booking is promoted to B."
   },
   {
@@ -3750,26 +3750,26 @@
    "id": "commercial-11",
    "text": "can we talk about pausing the engagement for a month",
    "want": "B",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "complaint",
     "book"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Pausing the engagement is a churn signal, and the request to talk is scheduling driven by dissatisfaction: book and flag hard."
   },
   {
    "id": "sched-mixed-12",
    "text": "half hour friday? want to talk about what's in scope for launch vs what we're calling fast follow, because right now I think you and I have different lists and that's going to hurt",
    "want": "B",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "book",
     "commitment"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Launch scope versus fast follow is a commitment question in lane C; the booking ask rides up to lane B."
   },
   {
@@ -3862,8 +3862,8 @@
    "id": "commercial-17",
    "text": "hey avery its dana calling about the invoice question period if you could send me a breakdown by phase before thursday that would be great thanks bye",
    "want": "C",
-   "got": "D",
-   "kind": "over_silence",
+   "got": "C",
+   "kind": "correct",
    "intents": [
     "money"
    ],
@@ -3874,14 +3874,14 @@
    "id": "sched-mixed-18",
    "text": "can we do 20 minutes tomorrow on the payment provider stuff? my team is asking me when they can stop doing the manual refund workaround and I keep saying soon which is losing its power",
    "want": "B",
-   "got": "C",
-   "kind": "unnecessary_escalation",
+   "got": "B",
+   "kind": "correct",
    "intents": [
     "book",
     "problem",
     "commitment"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Manual refund workaround is a live problem and the when-can-we-stop is a timeline ask; booking acted at B with immediate notice."
   },
   {
@@ -3913,13 +3913,13 @@
    "id": "sched-mixed-20",
    "text": "grab time monday? want to go through the bug list together instead of the two of us pinging in here all day",
    "want": "B",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "book",
     "problem"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "The bug list is live and unresolved, so a lane C problem sits alongside the booking; act on the booking at lane B."
   },
   {
@@ -3950,13 +3950,13 @@
    "id": "sched-mixed-22",
    "text": "so I got the invoice and the hours on the inventory sync line are almost double what we talked about. I'm not accusing anyone of anything, things take longer than expected, that's normal. but I do need to understand it before I send it to AP because they will ask me and I'd like to have an answer that isn't a shrug. do you have 30 min this week",
    "want": "B",
-   "got": "C",
-   "kind": "unnecessary_escalation",
+   "got": "B",
+   "kind": "correct",
    "intents": [
     "money",
     "book"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Disputed hours on an invoice is lane C money; the co-occurring 30 minute ask is promoted to lane B."
   },
   {
@@ -3987,12 +3987,12 @@
    "id": "sched-mixed-24",
    "text": "team's back from the offsite so we can actually be useful again. can we get on the calendar this week and go through the outstanding design questions in one sitting",
    "want": "A",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "correct",
    "intents": [
     "book"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Plain time request; open design questions are questions, not something broken, so no lane C intent is present."
   },
   {
@@ -4024,14 +4024,14 @@
    "id": "sched-mixed-26",
    "text": "avery can we talk. not in a bad way, but the delay on the payments integration has knocked our whole marketing calendar sideways and I need to know what I'm rebuilding around. any time tomorrow works, I'll clear it",
    "want": "B",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "book",
     "complaint",
     "commitment"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Delay has damaged their plan and they need a new timeline; scheduling driven by dissatisfaction, so book and flag hard."
   },
   {
@@ -4063,13 +4063,13 @@
    "id": "sched-mixed-28",
    "text": "hi its dana um can we move the friday call to monday I'm going to be out and also the inventory sink is still double counting the returns thanks",
    "want": "B",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "move",
     "problem"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Reschedule is lane A alone, but the live double-counting defect is lane C, promoting the reschedule to lane B."
   },
   {
@@ -4214,13 +4214,13 @@
    "id": "sched-mixed-36",
    "text": "morning avery. one of my people flagged that the order confirmation page shows the full card number. I'm assuming that's test data and not real, please confirm, and can we talk today",
    "want": "B",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "problem",
     "book"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Exposed card display is a live problem Max must not diagnose; the message describes card data but does not contain any, so lane D pii does not fire."
   },
   {
@@ -4251,12 +4251,12 @@
    "id": "sched-mixed-38",
    "text": "when are you free this week",
    "want": "A",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "correct",
    "intents": [
     "book"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Clean, unambiguous ask for time; send the link silently, since silence would itself be an error."
   },
   {
@@ -4325,12 +4325,12 @@
    "id": "sched-mixed-42",
    "text": "can we skip this week's check in? genuinely nothing new from my side and I'd rather give you the hour back. still on for the following week and I'll have the merchandising sign off by then",
    "want": "B",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "B",
+   "kind": "correct",
    "intents": [
     "cancel"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Skipping one occurrence is a cancellation; act, offer rebooking, and post it internally as a health signal. Negation scopes to this week only."
   },
   {
@@ -4362,13 +4362,13 @@
    "id": "sched-mixed-44",
    "text": "hey, ok, I'm going to be direct. the last three check ins have been you telling me things are on track and then a week later something slips. I don't think anyone's being dishonest, I think the status just isn't granular enough to be useful. can we restructure the meeting. same slot, different shape. I'd like to see the actual list of what's done and what isn't. 30 min thursday to talk about how we run these",
    "want": "B",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "complaint",
     "book"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Repeated slips and a demand to restructure the meeting is scheduling driven by dissatisfaction; book it and flag hard."
   },
   {
@@ -4437,13 +4437,13 @@
    "id": "sched-mixed-48",
    "text": "quick question then a scheduling ask. question: is the staging URL supposed to be public? I sent it to a vendor without thinking. ask: can we do 30 min friday to close out the design revisions, my designer is only around til the 20th",
    "want": "B",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "problem",
     "book"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Staging URL was shared outside the account, which is an exposure Max must not adjudicate; the booking ask rides up to lane B."
   },
   {
@@ -4463,13 +4463,13 @@
    "id": "sched-mixed-50",
    "text": "canceling. budget is being reviewed and I've been told not to green light any new work until that's done. I hate this, I want to be clear the pause is not about the quality of anything you've delivered. I'll come back with a date as soon as I have one.",
    "want": "B",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "B",
+   "kind": "correct",
    "intents": [
     "cancel",
     "money"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Cancel is lane B and must be posted internally; the budget freeze on new work is lane C money riding along."
   },
   {
@@ -4502,12 +4502,12 @@
    "id": "sched-mixed-52",
    "text": "status from us: photography done, copy done, size charts still pending on about 40 SKUs. that last one is on me. can we push our check in to friday so I have something to show instead of an apology",
    "want": "A",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "correct",
    "intents": [
     "move"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Status update carries no intent and the pending item is self-owned; the reschedule stands alone in lane A."
   },
   {
@@ -4540,13 +4540,13 @@
    "id": "sched-mixed-54",
    "text": "hi avery, hoping we can grab 30 min early next week. I got asked yesterday what the total spend is going to be through launch and I realized I couldn't answer it confidently, which is not a great feeling in front of my VP. want to build a number together that I can actually defend",
    "want": "B",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "book",
     "money"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Total spend through launch is lane C money; the 30 minute ask is acted on at lane B with immediate notice."
   },
   {
@@ -4577,13 +4577,13 @@
    "id": "sched-mixed-56",
    "text": "are you free at all today. the sync ran and wiped the custom descriptions on about 200 products. I don't think it's catastrophic, we have them in a sheet, but I'd like to understand why before it runs again tonight",
    "want": "B",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "book",
     "problem"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Live data loss that recurs tonight is lane C problem; the same-day time ask is promoted to lane B."
   },
   {
@@ -4653,13 +4653,13 @@
    "id": "sched-mixed-60",
    "text": "need to reschedule. my daughter's school thing, completely forgot. anything monday after 11? and separately, is the second invoice supposed to be net 15 or net 30, AP is asking and the PDF says both in different places",
    "want": "B",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "move",
     "money"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Reschedule is lane A alone, but the payment terms discrepancy is lane C money, promoting the whole thing to lane B."
   },
   {
@@ -4691,13 +4691,13 @@
    "id": "sched-mixed-62",
    "text": "20 minutes tomorrow? the search filters reset every time you go back which is going to kill conversion on the category pages",
    "want": "B",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "book",
     "problem"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Filter reset is a live defect Max must not diagnose; the 20 minute ask is promoted to lane B."
   },
   {
@@ -4767,13 +4767,13 @@
    "id": "sched-mixed-66",
    "text": "hi avery, dana's colleague marcus here covering while she's out this week. she asked me to move friday's check in to the following tuesday and to flag that the shipping estimate on the cart page is showing in the wrong currency for our canadian customers. she said you'd know what that means",
    "want": "B",
-   "got": "D",
-   "kind": "unnecessary_escalation",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "move",
     "problem"
    ],
-   "status": "awaiting_human",
+   "status": "auto_sent",
    "note": "Relayed by a colleague but it is still our meeting, so not a third party; the currency defect is lane C and promotes the reschedule to B."
   },
   {

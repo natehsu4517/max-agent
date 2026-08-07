@@ -127,6 +127,7 @@ export function runPipeline(rawMessage: string, opts: PipelineOptions): Pipeline
     ? {
         action: 'divert_borderline',
         linkIntent: null,
+        notify: null,
         replyText: null,
         sensitivityCategory: null,
         needsSilent: false,
@@ -244,7 +245,7 @@ export function runPipeline(rawMessage: string, opts: PipelineOptions): Pipeline
   // sent the message.
   const clientHeardSomething = Boolean(outboundText)
 
-  trace.push(outcomeStep(status, plan.needsSilent ?? false, clientHeardSomething))
+  trace.push(outcomeStep(status, plan.needsSilent ?? false, clientHeardSomething, Boolean(plan.notify)))
 
   return {
     rawMessage,
@@ -254,7 +255,13 @@ export function runPipeline(rawMessage: string, opts: PipelineOptions): Pipeline
     trace,
     outboundText,
     status,
-    headline: headlineFor(status, plan.needsSilent ?? false, decision.degraded, clientHeardSomething),
+    headline: headlineFor(
+      status,
+      plan.needsSilent ?? false,
+      decision.degraded,
+      clientHeardSomething,
+      Boolean(plan.notify)
+    ),
     handledBy: status === 'auto_sent' ? 'max' : status === 'skipped' ? 'nobody' : 'human',
   }
 }
@@ -331,23 +338,28 @@ export function plainFlag(flag: string): string {
   return flag
 }
 
-function outcomeStep(status: DraftStatus, silent: boolean, sentAck: boolean): TraceStep {
+function outcomeStep(
+  status: DraftStatus,
+  silent: boolean,
+  sentAck: boolean,
+  notified = false
+): TraceStep {
   return {
     layer: 3,
     title: 'What actually happened',
     technical: 'dispatch',
     kind: 'deterministic',
-    verdict: outcomeLabel(status, sentAck),
-    detail: outcomeDetail(status, silent, sentAck),
+    verdict: outcomeLabel(status, sentAck, notified),
+    detail: outcomeDetail(status, silent, sentAck, notified),
     flags: [],
     decisive: false,
   }
 }
 
-function outcomeLabel(status: DraftStatus, sentAck: boolean): string {
+function outcomeLabel(status: DraftStatus, sentAck: boolean, notified: boolean): string {
   switch (status) {
     case 'auto_sent':
-      return 'Max answered it himself'
+      return notified ? 'Max answered it, and flagged it to a person' : 'Max answered it himself'
     case 'pending':
       return 'A draft is waiting for one tap'
     case 'blocked':
@@ -361,10 +373,12 @@ function outcomeLabel(status: DraftStatus, sentAck: boolean): string {
   }
 }
 
-function outcomeDetail(status: DraftStatus, silent: boolean, sentAck: boolean): string {
+function outcomeDetail(status: DraftStatus, silent: boolean, sentAck: boolean, notified: boolean): string {
   switch (status) {
     case 'auto_sent':
-      return 'A fixed, pre-written message, checked twice, posted in the thread. The team still sees a copy in their internal channel, so nothing Max says to a client is invisible to them.'
+      return notified
+        ? 'The client got the answer straight away, and the account lead got an @mention rather than a log line. Being told is not the same as being asked to approve, and treating them as one thing is what makes an assistant either useless or reckless.'
+        : 'A fixed, pre-written message, checked twice, posted in the thread. The team still sees a copy in their internal channel, so nothing Max says to a client is invisible to them.'
     case 'pending':
       return 'The draft is sitting in the internal channel with a Send button. One tap from an authorised teammate posts it to the client, in the same thread.'
     case 'blocked':
@@ -387,12 +401,15 @@ function headlineFor(
   status: DraftStatus,
   silent: boolean,
   degraded: string | null,
-  sentAck: boolean
+  sentAck: boolean,
+  notified: boolean
 ): string {
   if (degraded) return 'The AI call failed, so Max fell back to a draft for a person.'
   switch (status) {
     case 'auto_sent':
-      return 'Max handled this one himself, using a pre-written message.'
+      return notified
+        ? 'Max handled this one and pinged a person anyway, because it is worth knowing about.'
+        : 'Max handled this one himself, using a pre-written message.'
     case 'pending':
       return 'Max wrote a draft and left it for a person to send.'
     case 'blocked':

@@ -139,3 +139,97 @@ same author, and every one of them still passes.
 
 That is the argument for corpora you did not write. It is not a rigor ornament. It is the
 difference between 47.6% and 3.7%.
+
+---
+
+# Results, run 2
+
+Same corpus, same labels, same policy. Only the engine changed.
+Reproduce with `npx tsx eval/score.ts`.
+
+## Before and after
+
+| | run 1 | run 2 |
+|---|---|---|
+| **unnecessary escalation rate** | **95.9%** | **42.1%** |
+| book | 1/74 | 48/74 |
+| move | 3/35 | 19/35 |
+| cancel | 1/25 | 16/25 |
+| dropped (nobody saw it) | 3 | **0** |
+| unsafe autonomy | 1 | **0** |
+| broken silence | 0 | **0** |
+| correct | 13.5% | 27.6% |
+
+## What changed in the engine
+
+**Each intent is judged on its own.** The old rule was that an ask earned a link
+only when it was the whole message. It sounded careful. It meant an unsafe *topic*
+suppressed a safe *action* that merely shared a paragraph with it, so a client
+waited on a calendar link because a bug report sat next to it.
+
+**Lane B exists.** `notify` on the decision: reply to the client *and* @mention a
+person. Cancellations take it, and so does every mixed message. Being told is not
+being asked to approve, and collapsing those two is what forced every cancellation
+back to a human.
+
+**stay_out is a positive finding, not a fallthrough.** It is the only outcome where
+nobody hears about a client, so an update now has to be inert in its own words.
+The three dropped messages are zero.
+
+**Recognition is cue-based.** Several narrow cues per intent instead of one
+verb-anchored pattern, because people describe the world and leave the action
+implied. Every cue still passes the stand-down gate.
+
+**An autonomy floor, added because widening created a new risk.** Run 2's first
+pass auto-sent a booking link to a client whose counsel was asking how checkout
+stores card data: `LEGAL_ADVERSARIAL` wants "legal action" and the message said
+"legal flagged". Before the widening that miss cost nothing, because nothing was
+being acted on. Now legal, contractual and identity wording forfeits the action
+outright, independent of the forced filter. **Any time recognition widens,
+something like this has to widen with it.**
+
+**The stand-down gate was over-firing too.** `whenever works for you` read as a
+hypothetical, `no need to find a new time` read as a retraction, `my kid has a
+thing at school` read as somebody else's meeting. The guard that stops rules
+over-firing can itself over-fire, and it is harder to notice, because a guard
+that suppresses too much looks like caution.
+
+## Instrument change, disclosed
+
+Run 1's scorer mapped every `auto_sent` to lane A, because lane B was unreachable.
+Once the engine could notify, a scorer that could not see `plan.notify` reported
+correct behaviour as `missing_notification`. Reading the field is a fix to the
+instrument, not a change to the policy, but it moves numbers, so both readings
+are published and `NOTIFY_BLIND=1 npx tsx eval/score.ts` reproduces run 1's
+instrument exactly.
+
+| | notify-blind | notify-aware |
+|---|---|---|
+| correct | 21.2% | 27.6% |
+| missing notification | 44 | 23 |
+| unnecessary escalation rate | 42.1% | 42.1% |
+
+The headline is identical under both, by construction: it counts whether Max
+acted, and notifying does not change that.
+
+## The caveat that matters most
+
+**This corpus is now training data, not test data.** Six passes were made while
+looking at its failures. The first were structural and would generalise: judge
+intents separately, constrain objects, scope the guards, add the floor. The later
+ones were closer to fitting the specific phrasings in front of me, which is
+exactly the failure this whole exercise was built to expose.
+
+So 42.1% is an optimistic number and should be read as one. An honest run 3 needs
+a corpus generated fresh, from the same briefs, that nothing has been tuned
+against. Until then the defensible claim is the direction and the mechanism, not
+the second decimal place.
+
+## Still wrong
+
+- `process 1/7` and `resource 0/5`. Small denominators, untouched this pass.
+- 61 requests still go to a person. `book us 30 pls`, `the 10am doesnt work for me
+  anymore`, `no call this week`.
+- 87 noise escalations: nothing needed doing, somebody got pinged anyway.
+- 113 over-silences, still resting on the one debatable policy line about holding
+  notes.

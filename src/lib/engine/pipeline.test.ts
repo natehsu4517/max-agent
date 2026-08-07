@@ -16,6 +16,7 @@ const OPTS = {
 
 function decision(over: Partial<ReplyDecision>): ReplyDecision {
   return {
+    notify: null,
     action: 'reply',
     linkIntent: null,
     replyText: null,
@@ -140,10 +141,10 @@ test('pii and legal are silent even when the model forgets', () => {
 
 test('safe-zone prompt keeps its load-bearing guardrails', () => {
   for (const needle of [
-    'MIXED MESSAGES ARE THE TRAP',
     'THIS IS THE MOST IMPORTANT RULE',
     'you must NOT write a URL',
     'choose divert_borderline',
+    'Never state an amount, a date or a diagnosis',
     'needs_silent=true ONLY for "legal" or "pii"',
   ]) {
     assert.ok(SAFE_ZONE_SYSTEM.includes(needle), `prompt lost: ${needle}`)
@@ -152,12 +153,18 @@ test('safe-zone prompt keeps its load-bearing guardrails', () => {
 
 // End to end
 
-test('the mixed cancel does not auto-send a rebook link', () => {
+test('the mixed cancel is handled, pings a person, and still sends no rebook link', () => {
+  // This used to assert the whole message went to a human. That was the wrong
+  // guarantee: it made a cancellation, which is safe to action, unanswerable.
+  // The guarantee that actually matters is narrower and survives intact -- no
+  // unrequested link is fired at someone who just said they would rebook.
   const msg = "Hey, can you cancel my call for tomorrow? I'll circle back with some new times later this week."
   const result = runPipeline(msg, OPTS)
-  assert.notEqual(result.status, 'auto_sent')
-  assert.equal(result.plan.action, 'divert_borderline')
-  // And the classifier it replaced would have gotten this wrong.
+  assert.equal(result.status, 'auto_sent')
+  assert.equal(result.plan.linkIntent, undefined, 'sent a link they did not ask for')
+  assert.ok(result.plan.notify, 'cancelled without telling anybody')
+  assert.ok(!/https?:|example\.com/.test(result.outboundText ?? ''), 'outbound carried a URL')
+  // And the classifier it replaced would have fired the rebook template.
   assert.equal(legacyWouldAutoSend(msg), true)
 })
 
@@ -232,8 +239,8 @@ test('a smart apostrophe cannot slip a mixed message past the guard', () => {
   // U+2019 is what macOS, iOS and Slack substitute for a typed apostrophe.
   const curly = 'Hey, can you cancel my call for tomorrow? I’ll circle back with some new times later this week.'
   const result = runPipeline(curly, OPTS)
-  assert.notEqual(result.status, 'auto_sent')
-  assert.equal(result.plan.action, 'divert_borderline')
+  assert.equal(result.plan.linkIntent, undefined, 'a curly quote slipped a rebook link through')
+  assert.ok(!/https?:|example\.com/.test(result.outboundText ?? ''))
 })
 
 test('self-handling is caught in phrasings other than "I\'ll"', () => {
@@ -245,13 +252,20 @@ test('self-handling is caught in phrasings other than "I\'ll"', () => {
   ]
   for (const msg of phrasings) {
     const result = runPipeline(msg, OPTS)
-    assert.notEqual(result.status, 'auto_sent', `auto-sent on: ${msg}`)
+    assert.equal(result.plan.linkIntent, undefined, `sent an unrequested link on: ${msg}`)
+    assert.ok(!/https?:|example\.com/.test(result.outboundText ?? ''), `link leaked on: ${msg}`)
   }
 })
 
-test('a second sentence makes an ask unclean even with no second question mark', () => {
+test('a second sentence no longer blocks the ask, but still suppresses the link', () => {
+  // The old rule was "the ask must BE the whole message", which sent most real
+  // messages to a human for the crime of having two sentences. Each intent is
+  // judged on its own now; what stays is that a client who says they will
+  // rebook does not get a rebook link.
   const result = runPipeline('Cancel tomorrow. I will rebook later this week.', OPTS)
-  assert.notEqual(result.status, 'auto_sent')
+  assert.equal(result.status, 'auto_sent')
+  assert.equal(result.plan.linkIntent, undefined)
+  assert.ok(result.plan.notify)
 })
 
 test('a leading greeting does not make a clean ask look mixed', () => {
@@ -322,13 +336,18 @@ test('a complaint is handed over, not answered', () => {
   assert.notEqual(result.status, 'auto_sent')
 })
 
-test('a booking ask carrying bad news does not auto-send', () => {
+test('a booking ask carrying bad news gets the link AND escalates the bad news', () => {
+  // The old behaviour let the unsafe TOPIC suppress the safe ACTION, so a
+  // client waited on a calendar link because a bug report shared the paragraph.
   const result = runPipeline(
     'Can we get time on the calendar? The staging build is erroring out for me.',
     OPTS
   )
-  assert.notEqual(result.status, 'auto_sent')
-  assert.equal(result.plan.sensitivityCategory, 'problem')
+  assert.equal(result.status, 'auto_sent')
+  assert.equal(result.plan.linkIntent, 'book')
+  assert.ok(result.plan.notify, 'the build failure went unreported')
+  // The half Max must never touch: no diagnosis, no fix, no date.
+  assert.equal(checkCompliance(result.outboundText!).passed, true)
 })
 
 test('each hand-off category gets its own wording', () => {
@@ -363,6 +382,7 @@ test('an invented link is caught even when the model sounds confident', () => {
       replyText: 'Sure, you can book any time at calendly.com/larkfield-goods/check-in.',
       sensitivityCategory: null,
       needsSilent: false,
+      notify: null,
       reasoning: 'wrote the address from memory',
       degraded: null,
     },
@@ -501,6 +521,7 @@ test('a model downgrade moves the decision off the model layer', () => {
       replyText: "You're definitely getting approved, probably around $50,000.",
       sensitivityCategory: null,
       needsSilent: false,
+      notify: null,
       reasoning: 'model went off-script',
       degraded: null,
     },
@@ -722,5 +743,106 @@ test('"if" after a verb of uncertainty is not a hypothetical', () => {
     'let me know if the checkout is still broken on your end',
   ]) {
     assert.equal(runPipeline(msg, OPTS).plan.sensitivityCategory, 'problem', `suppressed: ${msg}`)
+  }
+})
+
+// ---------------------------------------------------------------------------
+// Run 2: what the 402-message eval bought, pinned so it cannot quietly regress.
+//
+// These assert BEHAVIOUR the corpus proved was wrong, not phrasings the corpus
+// happened to contain. Pinning phrasings would be fitting to the test set, which
+// is the failure this whole exercise exists to demonstrate.
+// ---------------------------------------------------------------------------
+
+test('stay_out is a positive finding, never a shrug', () => {
+  // Three messages were DROPPED in run 1: no reply, no card, nobody told.
+  // handledBy 'nobody' is the only outcome where a client vanishes entirely.
+  const swallowed = [
+    "refunds issued in the admin aren't showing as refunded on the customer's order page. they still say paid",
+    'two orders in the last hour show as paid in the payment dashboard with no order record',
+    'who signed off on the extra scope because it wasnt me',
+  ]
+  for (const msg of swallowed) {
+    const r = runPipeline(msg, OPTS)
+    assert.notEqual(r.handledBy, 'nobody', `silently discarded: ${msg}`)
+  }
+})
+
+test('a bare acknowledgement is still allowed to bother nobody', () => {
+  // The other half of the same rule: widening what counts as substantive must
+  // not turn "thanks!" into a human's problem.
+  const r = runPipeline('perfect thanks', OPTS)
+  assert.equal(r.status, 'skipped')
+})
+
+test('a sensitive topic never suppresses a safe action it merely shares a paragraph with', () => {
+  const r = runPipeline('Can we get time on the calendar? The invoice also has a line I do not recognise.', OPTS)
+  assert.equal(r.plan.linkIntent, 'book', 'the booking was swallowed by the invoice question')
+  assert.ok(r.plan.notify, 'the invoice question went unreported')
+})
+
+test('a sensitive topic is never ANSWERED just because a safe action rode along', () => {
+  const r = runPipeline('Can we get time on the calendar? The staging build is erroring out.', OPTS)
+  assert.equal(checkCompliance(r.outboundText!).passed, true)
+  // No diagnosis, no date, no reassurance about the bug itself.
+  assert.ok(!/build|erroring|fix|sorry/i.test(r.outboundText ?? ''), `answered the bug: ${r.outboundText}`)
+})
+
+test('legal wording forfeits autonomy even when the pre-filter does not fire', () => {
+  // The floor that has to widen whenever recognition widens. LEGAL_ADVERSARIAL
+  // wants "legal action"; this says "legal flagged", and in run 2 it auto-sent
+  // a booking link to somebody whose counsel was asking about card storage.
+  const r = runPipeline(
+    'no rush at all but legal flagged something about how the checkout stores card data. can we get time this week',
+    OPTS
+  )
+  assert.notEqual(r.status, 'auto_sent')
+  assert.equal(r.plan.linkIntent, undefined)
+})
+
+test('politeness is not a conditional', () => {
+  // "if you can" and "whenever works for you" attach to a request being made
+  // right now. Reading them as what-ifs suppressed real bookings.
+  for (const msg of [
+    'put 20 min on for tomorrow if you can',
+    'throw something on my calendar for whenever works for you',
+  ]) {
+    assert.equal(runPipeline(msg, OPTS).plan.linkIntent, 'book', `read as hypothetical: ${msg}`)
+  }
+})
+
+test('a genuine what-if is still not a request', () => {
+  // The guard above must not swing the other way.
+  for (const msg of [
+    'in case we need to cancel the call, what is the process',
+    'if we ever need to move this I will let you know',
+  ]) {
+    assert.notEqual(runPipeline(msg, OPTS).status, 'auto_sent', `acted on a hypothetical: ${msg}`)
+  }
+})
+
+test('a relation can be the reason for a request without being its subject', () => {
+  const r = runPipeline('were gonna have to move the check in this week, my kid has a thing at school', OPTS)
+  assert.equal(r.plan.linkIntent, 'reschedule')
+})
+
+test('declining a rebook does not retract the cancellation', () => {
+  const r = runPipeline(
+    'im out sick so im cancelling tomorrows call. no need to find a new time, we can just pick it up next week',
+    OPTS
+  )
+  // Acted on, not handed over, and a person told. The link is correctly absent:
+  // the cancel template carries a rebooking link, and they just declined one.
+  assert.equal(r.status, 'auto_sent')
+  assert.equal(r.plan.linkIntent, undefined)
+  assert.ok(r.plan.notify)
+  assert.ok(!/https?:|example\.com/.test(r.outboundText ?? ''))
+})
+
+test('every cancellation tells somebody, and every notify reaches a person', () => {
+  for (const msg of ['Please cancel Thursday.', 'cancel our call tomorrow']) {
+    const r = runPipeline(msg, OPTS)
+    assert.equal(r.status, 'auto_sent', msg)
+    assert.ok(r.plan.notify, `cancelled in silence: ${msg}`)
   }
 })

@@ -46,6 +46,7 @@ export const SAFE_ZONE_SYSTEM = [
   '  reply_text: string | null',
   '  sensitivity_category: "problem"|"money"|"legal"|"complaint"|"pii"|"commitment" | null',
   '  needs_silent: boolean',
+  '  notify: string | null  (a reason to ping the account lead, even when you ARE replying)',
   '  reasoning: one short sentence',
   '',
   'THE SAFE ZONE (the ONLY things you may answer with action:"reply"):',
@@ -53,11 +54,11 @@ export const SAFE_ZONE_SYSTEM = [
   '   book a call, reschedule a call, cancel a call, or get the project request form.',
   '   For these, set link_intent to the matching value and leave reply_text null. The system',
   '   attaches the correct link from a template; you must NOT write a URL or the link text.',
-  '   A request is "clean" ONLY when that ask IS the whole message. If the client also says they',
-  '   will handle the next step themselves ("I will circle back with times", "I will rebook",',
-  '   "I will send you some times later", "I will follow up"), or adds any other question or',
-  '   detail, it is NOT clean: DO NOT set link_intent. An unrequested link, especially a rebook',
-  '   link they did not ask for, is exactly the wrong move here. Use divert_borderline instead.',
+  '   Judge EACH intent in the message separately. A scheduling ask does not stop being a clean',
+  '   scheduling ask because something else shares the paragraph with it. If the client also says',
+  '   they will handle the next step themselves ("I will circle back with times", "I will rebook"),',
+  '   still act, but leave link_intent null and write a short acknowledgement instead: an',
+  '   unrequested rebook link talks over someone who just said they did not need one.',
   '2. A pure acknowledgement or a SIMPLE PROCESS question with no substantive stakes:',
   '   office hours, "did you get my document?", "what happens next in the process?", a plain',
   '   "you\'re welcome"-style closer that still merits a word back. For these set action:"reply",',
@@ -84,14 +85,24 @@ export const SAFE_ZONE_SYSTEM = [
   '  reply in reply_text (a human approves/edits it). When in doubt between reply and',
   '  divert_borderline, choose divert_borderline.',
   '',
-  'stay_out: nothing is needed and no human action is needed either. A bare "thanks!", a pure',
-  '  status update the client is just informing you of ("sent the assets over", "booked it myself"),',
-  '  or a message a teammate is already actively handling in the recent conversation.',
+  'stay_out: nothing is needed and no human action is needed either. This is the ONLY outcome',
+  '  where nobody hears about a client at all, so it must be something you positively conclude,',
+  '  never a shrug. A bare "thanks!", a genuinely inert status update ("booked it myself"), or a',
+  '  message a teammate is already actively handling. If the "update" describes anything wrong,',
+  '  missing, duplicated or disputed, it is NOT inert: divert it. A silently discarded defect',
+  '  report is the worst outcome this system can produce.',
   '',
-  'MIXED MESSAGES ARE THE TRAP. If a message pairs a transactional word with anything else, a',
-  '  cancel PLUS "I will send times later", a booking ask PLUS a problem, a thank-you PLUS a',
-  '  question, it is NOT a clean safe-zone reply. Do not set link_intent. Divert (sensitive if',
-  '  the "else" is substantive, borderline if it is just unclear).',
+  'notify: set this whenever a person needs to KNOW, which is not the same as needing to approve.',
+  '  Two cases. (1) A cancellation: cancel it, and set notify, because a client calling off a call',
+  '  is the loudest health signal you get. (2) A mixed message: a booking ask PLUS a problem, a',
+  '  reschedule PLUS an invoice question. Act on the safe half, set the sensitive half as the',
+  '  notify reason, and say both plainly. Do NOT let a sensitive TOPIC suppress a safe ACTION that',
+  '  merely shares a paragraph with it: that leaves the client waiting on something you could have',
+  '  done, and silence is a cost too. What you must never do is answer the sensitive half yourself.',
+  '',
+  'MIXED MESSAGES ARE STILL THE TRAP, just not the one you would guess. The trap is answering the',
+  '  substantive half. Never state an amount, a date or a diagnosis because a scheduling ask was',
+  '  attached to it.',
   '',
   'HARD RULES for any reply_text you write:',
   '  - Never include a link, URL, phone number, or booking widget text.',
@@ -115,9 +126,18 @@ export const REPLY_SCHEMA = {
     reply_text: { type: ['string', 'null'] },
     sensitivity_category: { type: ['string', 'null'] },
     needs_silent: { type: 'boolean' },
+    notify: { type: ['string', 'null'] },
     reasoning: { type: 'string' },
   },
-  required: ['action', 'link_intent', 'reply_text', 'sensitivity_category', 'needs_silent', 'reasoning'],
+  required: [
+    'action',
+    'link_intent',
+    'reply_text',
+    'sensitivity_category',
+    'needs_silent',
+    'notify',
+    'reasoning',
+  ],
 } as const
 
 // Layer 0: deterministic inbound pre-filter.
@@ -173,7 +193,14 @@ export function planDispatch(
   if (decision.action === 'reply') {
     // Transactional: hand off to the deterministic template (it owns the link).
     if (decision.linkIntent) {
-      return { action: 'reply', linkIntent: decision.linkIntent, flags, reasoning: decision.reasoning }
+      return {
+        action: 'reply',
+        linkIntent: decision.linkIntent,
+        notify: decision.notify,
+        sensitivityCategory: decision.sensitivityCategory ?? undefined,
+        flags,
+        reasoning: decision.reasoning,
+      }
     }
     // Non-transactional prose: must exist, carry no link, and pass compliance.
     const raw = (decision.replyText || '').trim()
@@ -191,9 +218,18 @@ export function planDispatch(
       // Never auto-send un-vetted generated text: downgrade to a human draft,
       // carrying the flags and the cleaned draft so a human can fix it.
       flags.push('AUTO_BLOCKED', ...check.flags)
-      return { action: 'divert_borderline', replyText: cleaned, flags, reasoning: decision.reasoning }
+      // The send is gone but the reason a person was wanted is not: a downgraded
+      // lane-B reply still has to ping, or the notification is lost precisely
+      // when the message turned out to be harder than the model thought.
+      return {
+        action: 'divert_borderline',
+        replyText: cleaned,
+        notify: decision.notify,
+        flags,
+        reasoning: decision.reasoning,
+      }
     }
-    return { action: 'reply', replyText: cleaned, flags, reasoning: decision.reasoning }
+    return { action: 'reply', replyText: cleaned, notify: decision.notify, flags, reasoning: decision.reasoning }
   }
 
   if (decision.action === 'divert_sensitive') {

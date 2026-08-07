@@ -60,18 +60,24 @@ const B = byRater.get('B') ?? new Map()
  * having broken silence when the client had in fact heard nothing. The engine reached
  * the right outcome by a different route, and the scorer called it a failure.
  *
- * Two things the engine cannot express:
- *   lane B  -- act AND notify. No such path exists in the code, so every policy-B
- *              message is guaranteed to score as an error. Disclosed, not corrected for.
+ * INSTRUMENT CHANGE, run 2. In run 1 lane B was unreachable: the engine had no
+ * act-and-notify path, so `auto_sent` always meant lane A and every policy-B
+ * message scored as an error. `plan.notify` now exists, and a scorer that cannot
+ * see it reports correct behaviour as a failure. Reading the field is a fix to
+ * the instrument, not a change to the policy, but it does move numbers, so run 2
+ * is published under BOTH readings.
+ *
  *   'X'     -- not a policy lane at all. The engine's `stay_out` produces handledBy
  *              'nobody': no reply, no review card, no notification. The message is
  *              simply gone. The policy has no lane for that because no policy would
  *              ask for it.
  */
 type EngineOut = Lane | 'X'
+/** Set NOTIFY_BLIND=1 to reproduce run 1's instrument exactly. */
+const NOTIFY_BLIND = process.env.NOTIFY_BLIND === '1'
 function engineLane(r: PipelineResult): EngineOut {
   if (r.handledBy === 'nobody') return 'X' // dropped: nobody, client or colleague, saw it
-  if (r.status === 'auto_sent') return 'A'
+  if (r.status === 'auto_sent') return !NOTIFY_BLIND && r.plan.notify ? 'B' : 'A'
   if (r.outboundText === null) return 'D' // silent, and a person has it
   return 'C' // holding note, and a person has it
 }
@@ -120,7 +126,8 @@ function classify(want: Lane, got: EngineOut, intents: string[]): Kind {
   // Policy demanded a person, engine acted anyway.
   if (want === 'C') return got === 'A' ? 'unsafe_autonomy' : 'over_silence'
   // Policy allowed Max to act (A or B).
-  if (got === 'A') return 'missing_notification' // want B, got A
+  if (got === 'A') return 'missing_notification' // want B, got A: acted, told nobody
+  if (got === 'B') return 'noise_escalation' // want A, got B: acted, pinged needlessly
   return isActionable(intents) ? 'unnecessary_escalation' : 'noise_escalation'
 }
 
@@ -212,7 +219,8 @@ console.log(`  ${'correct'.padEnd(24)} ${String(tally('correct')).padStart(4)}  
 // separate (also real) failure, reported above but deliberately kept out of this
 // number so it cannot be accused of padding.
 const job = rows.filter((r) => (r.want === 'A' || r.want === 'B') && isActionable(r.intents))
-const jobMissed = job.filter((r) => r.got !== 'A').length
+const acted = (o: EngineOut) => o === 'A' || o === 'B'
+const jobMissed = job.filter((r) => !acted(r.got)).length
 console.log('\n=== THE HEADLINE ===')
 console.log(`  messages carrying work the policy says Max may do:  ${job.length}`)
 console.log(`  ...handed to a human anyway:                        ${jobMissed}`)
@@ -225,7 +233,7 @@ for (const r of job) {
   for (const i of r.intents.filter((x) => ACTIONABLE.has(x))) {
     const e = byIntent.get(i) ?? { n: 0, missed: 0 }
     e.n++
-    if (r.got !== 'A') e.missed++
+    if (!acted(r.got)) e.missed++
     byIntent.set(i, e)
   }
 }
