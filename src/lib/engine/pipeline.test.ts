@@ -602,3 +602,125 @@ test('a Layer 0 decision explains itself, not the model it overruled', () => {
   const legal = runPipeline('I have asked our attorney to look at the contract', OPTS)
   assert.match(legal.plan.reasoning, /legal/i)
 })
+
+test('a negated trigger does not fire its category', () => {
+  // The client uses the trigger word while saying its opposite. Max must not
+  // reply as though the thing happened.
+  for (const msg of [
+    'nothing is broken on our end, all good',
+    'we did not have any problem with the handoff',
+    'no need for a refund, we are happy',
+    'I am not frustrated, genuinely curious',
+    'no questions on the invoice, it all looks right',
+    'you do not have to guarantee anything',
+    'nothing is out of scope as far as I can tell',
+  ]) {
+    const r = runPipeline(msg, OPTS)
+    assert.equal(r.outboundText, null, `answered a negated statement as if it happened: ${msg}`)
+  }
+})
+
+test('the negation guard does not suppress a real report', () => {
+  // Every one of these carries a negative word AND a genuine issue. Suppressing
+  // any of them would be a worse bug than the one the guard fixes.
+  const cases: Array<[string, string]> = [
+    ['nothing is going through on the upload', 'problem'],
+    ['I am not sure if this is a bug, but the upload fails every time', 'problem'],
+    ['I do not know why the site is down but it is', 'problem'],
+    ['the checkout is not working at all', 'problem'],
+    ['no one can access the staging site', 'problem'],
+    ['we are not happy with how this is going', 'complaint'],
+    ['I do not understand what the invoice is charging me for', 'money'],
+    ['I am not asking for a guarantee but will this be done by friday', 'commitment'],
+  ]
+  for (const [msg, category] of cases) {
+    const r = runPipeline(msg, OPTS)
+    assert.equal(r.plan.sensitivityCategory, category, `suppressed a real report: ${msg}`)
+  }
+})
+
+// The stand-down gate. Each of these is a message where a keyword fires but the
+// meaning is the opposite, and Max must say nothing to the client.
+
+test('a retraction anywhere in the message stands the rule down', () => {
+  for (const msg of [
+    'I already have the calendar link, no need to send it again',
+    'Thanks for the invoice, no questions from us',
+    'The crash we reported yesterday is fixed now, thank you',
+    'That timeout cleared up on its own, nothing needed from you',
+    'Forget the reschedule, Tuesday is fine',
+    'the project form is done, sending it back today',
+    'My kid school website is down lol, unrelated',
+  ]) {
+    const r = runPipeline(msg, OPTS)
+    assert.equal(r.outboundText, null, `replied to a retracted message: ${msg}`)
+  }
+})
+
+test('a what-if never triggers a real action', () => {
+  for (const msg of [
+    'everything is fine, just want to know the process in case we need to cancel the call last minute',
+    'what happens if we need to cancel a meeting down the road',
+    'if you ever need to move our call that is fine, just give me a heads up',
+    'if the site goes down again who do I call',
+    'no worries if you need to push the meeting, we are flexible',
+  ]) {
+    const r = runPipeline(msg, OPTS)
+    assert.notEqual(r.status, 'auto_sent', `acted on a hypothetical: ${msg}`)
+    assert.equal(r.outboundText, null, `replied to a hypothetical: ${msg}`)
+  }
+})
+
+test('somebody else’s meeting is not our meeting', () => {
+  for (const msg of [
+    'had to cancel my dentist appointment tomorrow so my morning is wide open',
+    'I need to reschedule my dentist appointment before our call',
+    'Our supplier wants to reschedule their delivery again',
+    'We had to push our board meeting to next week so I might be quiet',
+    'I need to set up a call with our insurance broker this week',
+    "I'll get on a call with my team this afternoon and come back to you",
+  ]) {
+    const r = runPipeline(msg, OPTS)
+    assert.notEqual(r.status, 'auto_sent', `acted on a third-party meeting: ${msg}`)
+  }
+})
+
+test('a trigger word in its other sense does not fire', () => {
+  for (const msg of [
+    'I blocked out thursday morning for you',
+    "no rush, I'm stuck in back to back meetings today",
+    'quick one, how much notice do you need to move the call',
+    'all done with this on my end, sent everything over',
+    'we are looking at other venues for the offsite',
+    "I can guarantee I'll be on the call tuesday",
+    'can you push the deck over to me before the meeting',
+    "my schedule is packed this week but I'll be on the call",
+    'what is your availability next week',
+  ]) {
+    const r = runPipeline(msg, OPTS)
+    assert.equal(r.outboundText, null, `fired on the wrong sense of a keyword: ${msg}`)
+  }
+})
+
+test('a canned answer never asserts something the client just denied', () => {
+  // The receipt reply states a fact. Saying "yes, that came through on our end"
+  // to someone reporting the opposite is worse than saying nothing.
+  const denied = runPipeline('Did the deck not come through? I do not see it anywhere', OPTS)
+  assert.notEqual(denied.status, 'auto_sent')
+  assert.equal(denied.outboundText, null)
+
+  // The ordinary form still gets its answer.
+  const asked = runPipeline('Did you get the brand files I sent over?', OPTS)
+  assert.equal(asked.status, 'auto_sent')
+  assert.match(asked.outboundText!, /came through/)
+})
+
+test('"if" after a verb of uncertainty is not a hypothetical', () => {
+  // "I am not sure if this is a bug" is a live report, not a what-if.
+  for (const msg of [
+    'I am not sure if this is a bug, but the upload fails every time',
+    'let me know if the checkout is still broken on your end',
+  ]) {
+    assert.equal(runPipeline(msg, OPTS).plan.sensitivityCategory, 'problem', `suppressed: ${msg}`)
+  }
+})

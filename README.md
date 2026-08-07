@@ -128,18 +128,43 @@ npm run dev
 npm test
 ```
 
-54 tests: every compliance rule, PII detection in each common grouping, the Layer 0 override, the
+62 tests: every compliance rule, PII detection in each common grouping, the Layer 0 override, the
 compliance downgrade, the hallucinated-link guard, and end-to-end assertions for each demo case.
 The safe-zone prompt is pinned by a test, so deleting one of its guardrails fails CI. A test also
 asserts that each hand-off category is worded differently, because one generic line for every
 situation is what makes an assistant feel like a machine.
 
-Six of them come from stress-testing the demo the way people actually use it, typing sentences into
-the composer instead of clicking the buttons. Those found the bugs worth having: a negated request
-("please do NOT cancel our call") being acted on as a request, `down` matching "I'm down for
-Thursday" and apologising for an outage that never happened, a question with no question mark
-("can you confirm you got it") being filed as a status update and dropped silently, and the page
-narrating an acknowledgement to the client in cases where nothing had been sent.
+Fourteen of them come from stress-testing the demo the way people actually use it, typing sentences
+into the composer instead of clicking the buttons. That is where the interesting bugs were.
+
+## A keyword is not a meaning
+
+The rules in `simulate.ts` are word matches, and a word match reads "nothing is broken" and "the
+upload is broken" as the same event. Left alone that produces two failure modes, and the second one
+is much worse than it sounds:
+
+- It **says** a wrong thing. "No need for a refund, we are happy" got "I hear you, your account
+  lead is looking at this now."
+- It **does** a wrong thing. "Please do NOT cancel our call on Thursday" auto-sent a cancellation
+  confirmation, and "had to cancel my dentist appointment tomorrow" told the client a human was
+  cancelling their call with us.
+
+So every rule now passes a stand-down gate before it fires. The trigger must not be negated inside
+its own clause, retracted anywhere in the message ("no need", "already fixed", "nothing to do with
+your team"), hypothetical ("in case we need to cancel, what is the process"), or about somebody
+else's meeting. Triggers are also pinned to one sense: `down` needs a verb in front of it, `blocked`
+has to be something happening *to* the client rather than a calendar they blocked out, and a
+scheduling verb has to sit next to the thing it acts on rather than somewhere in the next forty
+characters.
+
+The tests that matter most here are the ones in the other direction. A careless negation guard
+suppresses real reports, and a suppressed outage is a worse bug than a clumsy reply, so a test pins
+a dozen genuine problems that each contain a negative word: "nothing is going through on the
+upload", "I do not know why the site is down but it is", "I am not sure if this is a bug, but the
+upload fails every time". All of them must still reach a person.
+
+None of this is how a real model reads a sentence. It is how a stand-in has to approximate one, and
+the file says so.
 
 ## Stack
 
