@@ -115,8 +115,8 @@
    "id": "sched-plain-7",
    "text": "cant make tomorrow",
    "want": "B",
-   "got": "B",
-   "kind": "correct",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "cancel"
    ],
@@ -187,8 +187,8 @@
    "id": "sched-plain-11",
    "text": "something came up, have to bail on friday",
    "want": "B",
-   "got": "B",
-   "kind": "correct",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "cancel"
    ],
@@ -259,8 +259,8 @@
    "id": "sched-plain-15",
    "text": "lets skip the check in this week",
    "want": "B",
-   "got": "B",
-   "kind": "correct",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "cancel"
    ],
@@ -427,8 +427,8 @@
    "id": "sched-plain-25",
    "text": "im out sick so im cancelling tomorrows call. no need to find a new time, we can just pick it back up at the regular one next week",
    "want": "B",
-   "got": "B",
-   "kind": "correct",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "cancel"
    ],
@@ -753,8 +753,8 @@
    "id": "sched-plain-43",
    "text": "cancel friday",
    "want": "B",
-   "got": "B",
-   "kind": "correct",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "cancel"
    ],
@@ -826,8 +826,8 @@
    "id": "sched-plain-47",
    "text": "im gonna have to drop off the thursday one. nothing wrong, just way too much on my plate this week",
    "want": "B",
-   "got": "B",
-   "kind": "correct",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "cancel"
    ],
@@ -1007,8 +1007,8 @@
    "id": "sched-plain-57",
    "text": "hi avery so i just realized i double booked myself for tuesday any chance we can move that one to wednesday same time thanks so much",
    "want": "A",
-   "got": "B",
-   "kind": "noise_escalation",
+   "got": "A",
+   "kind": "correct",
    "intents": [
     "move"
    ],
@@ -1324,8 +1324,8 @@
    "id": "sched-mixed-7",
    "text": "sorry to do this but I need to cancel tomorrow. one of my merchandisers gave notice friday and I'm covering her whole category through end of month. is everything still tracking on your side or should I be worried",
    "want": "B",
-   "got": "B",
-   "kind": "correct",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "cancel",
     "commitment"
@@ -1495,8 +1495,8 @@
    "id": "sched-mixed-17",
    "text": "im probably being dense but I dont understand what changed between the estimate in march and the one you sent last week. the number went up about 18k and I cant find the thing that explains it. can we get on the phone, I'd genuinely rather you talk me through it than send a doc",
    "want": "B",
-   "got": "B",
-   "kind": "correct",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "book",
     "money"
@@ -1706,8 +1706,8 @@
    "id": "sched-mixed-29",
    "text": "cancelling tomorrow's check in. honestly I'm annoyed and I don't want to have that conversation while I'm annoyed. give me till thursday.",
    "want": "B",
-   "got": "B",
-   "kind": "correct",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "cancel",
     "complaint"
@@ -2027,8 +2027,8 @@
    "id": "sched-mixed-47",
    "text": "moving our call to next week. my head of ops is out sick and she's the one who actually knows the inventory rules, without her in the room we'd just be guessing at the mapping again",
    "want": "A",
-   "got": "B",
-   "kind": "noise_escalation",
+   "got": "A",
+   "kind": "correct",
    "intents": [
     "move"
    ],
@@ -2411,8 +2411,8 @@
    "id": "sched-plain-4",
    "text": "kill the monday call",
    "want": "B",
-   "got": "B",
-   "kind": "correct",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "cancel"
    ],
@@ -2736,8 +2736,8 @@
    "id": "sched-plain-22",
    "text": "not gonna make it today, sorry",
    "want": "B",
-   "got": "B",
-   "kind": "correct",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "cancel"
    ],
@@ -2844,8 +2844,8 @@
    "id": "sched-plain-28",
    "text": "drop wednesday",
    "want": "B",
-   "got": "B",
-   "kind": "correct",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "cancel"
    ],
@@ -2916,8 +2916,8 @@
    "id": "sched-plain-32",
    "text": "hey we dont need the design review anymore, the team worked it out in the thread. gonna cancel it",
    "want": "B",
-   "got": "B",
-   "kind": "correct",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "cancel"
    ],
@@ -3060,8 +3060,8 @@
    "id": "sched-plain-40",
    "text": "sorry, have to cancel the 11am. ill be traveling and wont have signal",
    "want": "B",
-   "got": "B",
-   "kind": "correct",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "cancel"
    ],
@@ -3216,8 +3216,8 @@
    "id": "adversarial-48",
    "text": "push whatever you want actually, they cancelled",
    "want": "A",
-   "got": "B",
-   "kind": "noise_escalation",
+   "got": "A",
+   "kind": "correct",
    "intents": [
     "move"
    ],
@@ -3384,8 +3384,8 @@
    "id": "sched-plain-58",
    "text": "hey avery unfortunately i need to cancel our call this afternoon, something came up on my end. sorry for the late notice",
    "want": "B",
-   "got": "B",
-   "kind": "correct",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "cancel"
    ],
@@ -3578,8 +3578,8 @@
    "id": "sched-mixed-2",
    "text": "invoice question. line 3 says discovery workshop $6,800 but I had that as already inside the original scope. can we put 15 min on the calendar thursday to walk the whole thing line by line? not a fight, I just need to be able to explain it upstairs",
    "want": "B",
-   "got": "B",
-   "kind": "correct",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "money",
     "book"
@@ -3615,8 +3615,8 @@
    "id": "sched-mixed-4",
    "text": "morning! four people on my team ran the checkout on staging yesterday, mostly clean, but two got stuck at the shipping step and couldn't get past it. are you free weds afternoon",
    "want": "B",
-   "got": "B",
-   "kind": "correct",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "problem",
     "book"
@@ -3725,8 +3725,8 @@
    "id": "sched-mixed-10",
    "text": "hey avery quick note the checkout is throwing an error when you use apple pay on iphone period can we talk tomorrow at ten question mark",
    "want": "B",
-   "got": "B",
-   "kind": "correct",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "problem",
     "book"
@@ -3874,8 +3874,8 @@
    "id": "sched-mixed-18",
    "text": "can we do 20 minutes tomorrow on the payment provider stuff? my team is asking me when they can stop doing the manual refund workaround and I keep saying soon which is losing its power",
    "want": "B",
-   "got": "B",
-   "kind": "correct",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "book",
     "problem",
@@ -3950,8 +3950,8 @@
    "id": "sched-mixed-22",
    "text": "so I got the invoice and the hours on the inventory sync line are almost double what we talked about. I'm not accusing anyone of anything, things take longer than expected, that's normal. but I do need to understand it before I send it to AP because they will ask me and I'd like to have an answer that isn't a shrug. do you have 30 min this week",
    "want": "B",
-   "got": "B",
-   "kind": "correct",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "money",
     "book"
@@ -4325,8 +4325,8 @@
    "id": "sched-mixed-42",
    "text": "can we skip this week's check in? genuinely nothing new from my side and I'd rather give you the hour back. still on for the following week and I'll have the merchandising sign off by then",
    "want": "B",
-   "got": "B",
-   "kind": "correct",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "cancel"
    ],
@@ -4463,8 +4463,8 @@
    "id": "sched-mixed-50",
    "text": "canceling. budget is being reviewed and I've been told not to green light any new work until that's done. I hate this, I want to be clear the pause is not about the quality of anything you've delivered. I'll come back with a date as soon as I have one.",
    "want": "B",
-   "got": "B",
-   "kind": "correct",
+   "got": "A",
+   "kind": "missing_notification",
    "intents": [
     "cancel",
     "money"

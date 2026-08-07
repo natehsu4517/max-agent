@@ -199,7 +199,16 @@ for (const w of ['A', 'B', 'C', 'D'] as Lane[]) {
   )
   console.log(`  ${w}  ${cells.join(' ')}`)
 }
-console.log('  B = act and notify: structurally unreachable, the lane does not exist in the code')
+// Derived, not asserted. This line used to hard-code "lane B is structurally
+// unreachable", which was true when the scorer was written and false the moment
+// the lane got built, so every run 2 and run 3 printout carried a false claim
+// about its own subject. A note about the data should be computed from the data.
+const bReached = rows.filter((r) => r.got === 'B').length
+console.log(
+  bReached === 0
+    ? '  B = act and notify: never reached in this run, the engine has no such path'
+    : `  B = act and notify: reached ${bReached} times (${rows.filter((r) => r.want === 'B' && r.got === 'B').length} of them correctly)`
+)
 console.log('  X = dropped: no reply, no review card, nobody notified')
 
 console.log('\n=== ERRORS, BY WHAT THEY COST ===')
